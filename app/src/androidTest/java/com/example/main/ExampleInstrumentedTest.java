@@ -1,4 +1,4 @@
-package com.example.androidmapsservice;
+package com.example.main;
 
 import android.content.Context;
 import androidx.test.InstrumentationRegistry;

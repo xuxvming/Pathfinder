@@ -1,4 +1,4 @@
-package com.example.androidmapsservice;
+package com.group12.main;
 
 import androidx.fragment.app.FragmentActivity;
 import android.os.Bundle;
