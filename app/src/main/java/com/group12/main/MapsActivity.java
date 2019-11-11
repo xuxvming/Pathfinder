@@ -1,5 +1,6 @@
 package com.group12.main;
 
+import android.app.Activity;
 import androidx.fragment.app.FragmentActivity;
 import android.os.Bundle;
 
@@ -24,7 +25,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
 
         //context
-        PathFinderFactory factory  = new PathFinderFactory(this);
+        PathFinderFactory factory  = new PathFinderFactory(getApplicationContext());
+        System.out.println(factory.getApiKey());
         mapFragment.getMapAsync(this);
     }
 

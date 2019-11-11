@@ -26,16 +26,16 @@ public class PathFinderFactory {
             return null;
         }
         else {
-            return new GoogleMapsPathFinder(origin,destination,GOOGLE_DIRECTIONS_API,getApiKey(context));
+            return new GoogleMapsPathFinder(origin,destination,GOOGLE_DIRECTIONS_API,getApiKey());
         }
     }
 
-    public String getApiKey(Context context){
+    public String getApiKey(){
         String apikey = "";
         try {
             ApplicationInfo applicationInfo = context.getPackageManager().getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA);
             Bundle bundle = applicationInfo.metaData;
-            LOGGER.info("Getting api key from {[]}",META_DATA_KEY);
+            LOGGER.info("Getting api key from [{}]",META_DATA_KEY);
             apikey = bundle.getString(META_DATA_KEY);
 
         } catch (PackageManager.NameNotFoundException e) {
@@ -43,5 +43,4 @@ public class PathFinderFactory {
         }
         return apikey;
     }
-
 }

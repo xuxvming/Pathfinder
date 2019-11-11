@@ -9,14 +9,7 @@ public class GoogleMapsPathFinderTest {
 
     @Before
     public void setup(){
-        String origin = "here";
-        String destination = "there";
-        String url = "queryURL";
-        pathFinder = new GoogleMapsPathFinder(origin, destination, url);
-    }
-
-    @Test
-    public void testGetApiKey(){
 
     }
+
 }
