@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "107630775098",
+    "firebase_url": "https://wayfinder-app.firebaseio.com",
+    "project_id": "wayfinder-app",
+    "storage_bucket": "wayfinder-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:107630775098:android:c2a6faff180e11e07f1e03",
+        "android_client_info": {
+          "package_name": "com.group12.androidmapsservice"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "107630775098-ml4nhv46s277fp4k887i081s393c7i75.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBSZ48otPXH6yruJG2F8COtdDsiT6uZ5c0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "107630775098-ml4nhv46s277fp4k887i081s393c7i75.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,10 +1,10 @@
 package com.group12.pathfinder;
 
+import android.os.AsyncTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
+import java.io.*;
 import java.net.URL;
 import java.util.HashMap;
 
@@ -16,49 +16,62 @@ public abstract class AbstractPathFinder {
     private final String origin;
     private final String destination;
     private final String url;
-    private final String travelTime;
-    private  String travelMode;
+    private String departureTime;
+    private String mode;
 
-    public AbstractPathFinder(String origin, String destination,String url,String travelTime) {
+    public AbstractPathFinder(String origin, String destination,String url) {
         this.origin = origin;
         this.destination = destination;
-        this.travelMode = "";
         this.url =  url;
-        this.travelTime = travelTime;
-
-    }
-    public void setTravelMode(String travelMode){
-        this.travelMode = travelMode;
     }
 
-    public OutputStream makeRequest(String method, HashMap<String,String> parameters){
-        try {
-            URL requestUrl = new URL(getUrl());
-            HttpURLConnection connection = (HttpURLConnection) requestUrl.openConnection();
-            connection.setRequestMethod(method);
-            LOGGER.info("Constructing connection to {[]}, using request method {[]}",requestUrl, method);
-            return connection.getOutputStream();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+    public void makeRequest(){
+        RequestMaker requestMaker = new RequestMaker();
+        requestMaker.execute(createURl());
     }
 
-    public abstract AbstractDirectionsObject findPath();
+    public abstract String createURl();
 
-    public String getUrl() {
+    String getUrl() {
         return url;
     }
 
-    public String getOrigin() {
-        return origin;
-    }
+    String getOrigin() { return origin; }
 
-    public String getDestination() {
-        return destination;
-    }
+    String getDestination() { return destination; }
 
-    public String getTravelTime() {
-        return travelTime;
-    }
+    String getDepartureTime() { return departureTime; }
+
+    String getMode() { return mode; }
+
+    public void setDepartureTime(String departureTime) { this.departureTime = departureTime; }
+
+  private static class RequestMaker extends AsyncTask<String, Void, String>{
+
+      @Override
+      protected String doInBackground(String... params) {
+          try{
+              String link = params[0];
+              URL url = new URL(link);
+              InputStream inputStream = url.openConnection().getInputStream();
+              StringBuilder sb = new StringBuilder();
+              BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+              String line;
+              while ((line = reader.readLine()) !=null){
+                  sb.append(line);
+              }
+              return sb.toString();
+          } catch (IOException e) {
+              LOGGER.error("Error making request" ,e );
+          }
+          return null;
+      }
+
+      @Override
+      protected void onPostExecute(String res){
+
+      }
+  }
 }
+
+
