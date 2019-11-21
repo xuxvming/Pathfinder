@@ -1,4 +1,4 @@
-package com.group12.main;
+package com.group12.activities;
 
 import android.content.Context;
 import androidx.test.InstrumentationRegistry;

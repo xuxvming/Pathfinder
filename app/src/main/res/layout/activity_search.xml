@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent" android:theme="@style/AppTheme"
+                tools:context=".SearchActivity">
+
+
+    <com.mancj.materialsearchbar.MaterialSearchBar
+            app_speechMode="true"
+            app_hint="Search hint"
+            app_maxSuggestionsCount="10"
+            android:id="@+id/search_bar"
+            android:layout_centerInParent="true"
+            android:layout_width="376dp"
+            android:layout_height="591dp"/>
+
+</RelativeLayout>

@@ -27,5 +27,4 @@ public class GoogleMapsPathFinder extends AbstractPathFinder {
         return url;
     }
 
-   
 }

@@ -3,13 +3,12 @@ package com.group12.pathfinder;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.os.Bundle;
-import android.view.ContextThemeWrapper;
-import com.group12.main.MapsActivity;
+import com.group12.activities.MapsActivity;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class PathFinderFactoryTest {
 
