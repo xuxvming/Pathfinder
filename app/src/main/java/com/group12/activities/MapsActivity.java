@@ -36,6 +36,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
         locationButton = findViewById(R.id.location_button);
         searchButton = findViewById(R.id.search_button);
+
     }
 
     /**
@@ -52,14 +53,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
         final PathFinderFactory factory = new PathFinderFactory();
         factory.setContext(MapsActivity.this);
+
         locationButton.setOnClickListener(new OnClickListener() {
             @SuppressLint("MissingPermission")
             @Override
             public void onClick(View view) {
                 LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListnerImpl(mMap,factory));
+                if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, new LocationListnerImpl(mMap, factory));
+                } else if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListnerImpl(mMap, factory));
+                }
             }
+
         });
+        locationButton.performClick();
 
         searchButton.setOnClickListener(new OnClickListener() {
             @Override
