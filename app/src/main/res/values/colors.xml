@@ -5,4 +5,5 @@
     <color name="colorAccent">#B0BEC5</color>
     <color name="colorWhite">#fafafa</color>
     <color name="transparentBlack">#96000000</color>
+    <color name="polylinecolor">#ff00ffff</color>
 </resources>

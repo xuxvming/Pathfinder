@@ -27,7 +27,7 @@ public class LocationListnerImpl implements LocationListener {
        LatLng currLocation = new LatLng(location.getLatitude(), location.getLongitude());
        String origin = currLocation.latitude + "," + currLocation.longitude;
        factory.setOrigin(origin);
-       googleMaps.addMarker(new MarkerOptions().position(currLocation).title("Marker in Sydney"));
+       googleMaps.addMarker(new MarkerOptions().position(currLocation));
        googleMaps.animateCamera(CameraUpdateFactory.newLatLngZoom(currLocation,12.0f));
     }
 

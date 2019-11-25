@@ -31,6 +31,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private FloatingActionButton locationButton;
     private FloatingActionButton searchButton;
     private static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
+    private final PathFinderFactory factory = new PathFinderFactory();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,16 +45,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
         locationButton = findViewById(R.id.location_button);
         searchButton = findViewById(R.id.search_button);
-        final PathFinderFactory factory = new PathFinderFactory();
+
         factory.setContext(MapsActivity.this);
-        locationButton.setOnClickListener(new OnClickListener() {
-            @SuppressLint("MissingPermission")
-            @Override
-            public void onClick(View view) {
-                LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListnerImpl(mMap,factory));
-            }
-        });
+
 
         searchButton.setOnClickListener(new OnClickListener() {
                                             @Override
@@ -64,6 +58,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                             }
                                         }
         );
+
+
 
     }
 
@@ -85,6 +81,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             positionCamera(response,mMap);
             addPolyline(response,mMap);
         }
+
+        locationButton.setOnClickListener(new OnClickListener() {
+            @SuppressLint("MissingPermission")
+            @Override
+            public void onClick(View view) {
+                LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, new LocationListnerImpl(mMap, factory));
+                } else if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListnerImpl(mMap, factory));
+                }
+            }
+
+        });
+
+        locationButton.performClick();
     }
 
     private void addMarkersToMap(AbstractDirectionsObject results, GoogleMap mMap) {
@@ -99,6 +111,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void addPolyline(AbstractDirectionsObject results, GoogleMap mMap) {
         String polyline = results.getOverviewPolyline();
         List<LatLng> decoded = PolyUtil.decode(polyline);
-        mMap.addPolyline(new PolylineOptions().addAll(decoded));
+        mMap.addPolyline(new PolylineOptions().addAll(decoded).color(R.color.polylinecolor));
     }
 }
