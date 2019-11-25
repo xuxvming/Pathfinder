@@ -16,12 +16,12 @@ public class PathFinderFactory implements Serializable {
 
     private final static String GOOGLE_DIRECTIONS_API = "https://maps.googleapis.com/maps/api/directions/json?";
     private final static String WEB_SERVICE_API = "";
-    private final static String META_DATA_KEY = "com.google.android.geo.API_KEY";
+    private final static String API_KEY = "AIzaSyDSD2X4p1lAIuYGWTcr7NKKPNPTAgsUD-w";
 
-    private Context context;
+    private transient Context context;
     private String origin;
     private String destination;
-    private String mode;
+    private String mode = "GoogleMaps";
 
 
     public AbstractPathFinder getPathFinder(){
@@ -29,22 +29,8 @@ public class PathFinderFactory implements Serializable {
             return null;
         }
         else {
-            return new GoogleMapsPathFinder(getOrigin(),getDestination(),GOOGLE_DIRECTIONS_API,getApiKey());
+            return new GoogleMapsPathFinder(getOrigin(),getDestination(),GOOGLE_DIRECTIONS_API,API_KEY);
         }
-    }
-
-    public String getApiKey(){
-        String apikey = "";
-        try {
-            ApplicationInfo applicationInfo = getContext().getPackageManager().getApplicationInfo(getContext().getPackageName(), PackageManager.GET_META_DATA);
-            Bundle bundle = applicationInfo.metaData;
-            LOGGER.info("Getting api key from [{}]",META_DATA_KEY);
-            apikey = bundle.getString(META_DATA_KEY);
-
-        } catch (PackageManager.NameNotFoundException e) {
-            LOGGER.error("Error getting api key",e );
-        }
-        return apikey;
     }
 
     public void setDestination(String destination) {

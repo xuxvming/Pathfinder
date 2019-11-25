@@ -1,6 +1,10 @@
 package com.group12.pathfinder;
 
 import android.os.AsyncTask;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.concurrent.ExecutionException;
 
 
 public abstract class AbstractPathFinder {
@@ -27,9 +32,29 @@ public abstract class AbstractPathFinder {
         this.url =  url;
     }
 
-    public void makeRequest(){
+    public AbstractDirectionsObject makeRequest(){
         RequestMaker requestMaker = new RequestMaker();
-        requestMaker.execute(createURl());
+        AbstractDirectionsObject abstractDirectionsObject = new AbstractDirectionsObject();
+        try {
+            String res = requestMaker.execute(createURl()).get();
+            JsonParser parser = new JsonParser();
+            JsonElement jsonElement = parser.parse(res);
+            JsonObject jsonObject = jsonElement.getAsJsonObject();
+            JsonArray routes = jsonObject.getAsJsonArray("routes");
+            String polyline = routes.get(0).getAsJsonObject().get("overview_polyline").getAsJsonObject().get("points").getAsString();
+            JsonObject starLocation = (JsonObject) routes.get(0).getAsJsonObject().get("legs").getAsJsonArray().get(0).getAsJsonObject().get("start_location");
+            JsonObject endLocation = (JsonObject) routes.get(0).getAsJsonObject().get("legs").getAsJsonArray().get(0).getAsJsonObject().get("end_location");
+            abstractDirectionsObject.setOverviewPolyline(polyline);
+            abstractDirectionsObject.setOriginLat(starLocation.get("lat").getAsDouble());
+            abstractDirectionsObject.setOriginLng(starLocation.get("lng").getAsDouble());
+            abstractDirectionsObject.setDestinationLat(endLocation.get("lat").getAsDouble());
+            abstractDirectionsObject.setDestinationLng(endLocation.get("lng").getAsDouble());
+        } catch (ExecutionException e ) {
+            LOGGER.error("Error getting request",e);
+        } catch (InterruptedException e) {
+            LOGGER.error("Request Interrupted",e);
+        }
+        return abstractDirectionsObject;
     }
 
     public abstract String createURl();
@@ -71,8 +96,9 @@ public abstract class AbstractPathFinder {
 
       @Override
       protected void onPostExecute(String res){
-            LOGGER.info(res);
+
       }
+
   }
 }
 

@@ -13,18 +13,12 @@ public class GoogleMapsPathFinder extends AbstractPathFinder {
 
     @Override
     public String createURl() {
-        HashMap<String,String> params = new HashMap<>();
+        RequestParams params = new RequestParams();
         params.put("origin",getOrigin());
         params.put("destination",getDestination());
-        if (!getDepartureTime().isEmpty()){
-            params.put("departure_time", getDepartureTime());
-        }
-        if (!getMode().isEmpty()){
-            params.put("mode",getMode());
-        }
         params.put("key",apiKey);
         String url = getUrl()+params.toString();
         return url;
     }
-
 }
+

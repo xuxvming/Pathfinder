@@ -9,13 +9,21 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
 import androidx.fragment.app.FragmentActivity;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.maps.android.PolyUtil;
+import com.group12.pathfinder.AbstractDirectionsObject;
 import com.group12.pathfinder.LocationListnerImpl;
 import com.group12.pathfinder.PathFinderFactory;
 import com.group12.permission.PermissionChecker;
+
+import java.util.List;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -36,6 +44,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
         locationButton = findViewById(R.id.location_button);
         searchButton = findViewById(R.id.search_button);
+        final PathFinderFactory factory = new PathFinderFactory();
+        factory.setContext(MapsActivity.this);
+        locationButton.setOnClickListener(new OnClickListener() {
+            @SuppressLint("MissingPermission")
+            @Override
+            public void onClick(View view) {
+                LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListnerImpl(mMap,factory));
+            }
+        });
+
+        searchButton.setOnClickListener(new OnClickListener() {
+                                            @Override
+                                            public void onClick(View view) {
+                                                Intent intent = new Intent(MapsActivity.this,SearchActivity.class);
+                                                intent.putExtra("PathFinderFactory",factory);
+                                                startActivity(intent);
+                                            }
+                                        }
+        );
+
     }
 
     /**
@@ -50,29 +79,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        final PathFinderFactory factory = new PathFinderFactory();
-        factory.setContext(MapsActivity.this);
-        locationButton.setOnClickListener(new OnClickListener() {
-            @SuppressLint("MissingPermission")
-            @Override
-            public void onClick(View view) {
-                LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListnerImpl(mMap,factory));
-            }
-        });
-
-        searchButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(MapsActivity.this,SearchActivity.class);
-                intent.putExtra("PathFinderFactory",factory);
-                startActivity(intent);
-            }
+        AbstractDirectionsObject response = (AbstractDirectionsObject) getIntent().getSerializableExtra("Response");
+        if (response != null){
+            addMarkersToMap(response,mMap);
+            positionCamera(response,mMap);
+            addPolyline(response,mMap);
         }
-        );
     }
 
+    private void addMarkersToMap(AbstractDirectionsObject results, GoogleMap mMap) {
+        mMap.addMarker(new MarkerOptions().position(new LatLng(results.getOriginLat(), results.getOriginLng())));
+        mMap.addMarker(new MarkerOptions().position(new LatLng(results.getDestinationLat(), results.getDestinationLng())));
+    }
 
+    private void positionCamera(AbstractDirectionsObject results, GoogleMap mMap) {
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(results.getOriginLat(), results.getOriginLng()), 12));
+    }
 
-
+    private void addPolyline(AbstractDirectionsObject results, GoogleMap mMap) {
+        String polyline = results.getOverviewPolyline();
+        List<LatLng> decoded = PolyUtil.decode(polyline);
+        mMap.addPolyline(new PolylineOptions().addAll(decoded));
+    }
 }

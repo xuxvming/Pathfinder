@@ -1,7 +1,10 @@
 package com.group12.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
+import com.group12.pathfinder.AbstractDirectionsObject;
+import com.group12.pathfinder.AbstractPathFinder;
 import com.group12.pathfinder.PathFinderFactory;
 import com.mancj.materialsearchbar.MaterialSearchBar;
 import org.slf4j.Logger;
@@ -29,9 +32,12 @@ public class SearchActivity extends AppCompatActivity implements MaterialSearchB
     @Override
     public void onSearchConfirmed(CharSequence text) {
        PathFinderFactory factory = (PathFinderFactory) getIntent().getSerializableExtra("PathFinderFactory");
-//       if (factory.getOrigin().isEmpty()){
-//           throw new
-//       }
+       String destination = text.toString();
+       factory.setDestination(destination);
+       AbstractDirectionsObject response = searchForDirection(factory);
+       Intent intent = new Intent(SearchActivity.this,MapsActivity.class);
+       intent.putExtra("Response",response);
+       startActivity(intent);
     }
 
     @Override
@@ -39,7 +45,8 @@ public class SearchActivity extends AppCompatActivity implements MaterialSearchB
 
     }
 
-    private String searchForDirecttion(PathFinderFactory factory){
-        return null;
+    private synchronized AbstractDirectionsObject searchForDirection(PathFinderFactory factory){
+        AbstractPathFinder pathFinder = factory.getPathFinder();
+        return pathFinder.makeRequest();
     }
 }
