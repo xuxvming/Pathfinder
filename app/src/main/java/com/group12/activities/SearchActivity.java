@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.group12.pathfinder.AbstractDirectionsObject;
 import com.group12.pathfinder.AbstractPathFinder;
 import com.group12.pathfinder.PathFinderFactory;
+import com.group12.utils.RequestMaker;
 import com.mancj.materialsearchbar.MaterialSearchBar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +38,7 @@ public class SearchActivity extends AppCompatActivity implements MaterialSearchB
        AbstractDirectionsObject response = searchForDirection(factory);
        Intent intent = new Intent(SearchActivity.this,MapsActivity.class);
        intent.putExtra("Response",response);
+       LOGGER.info("Switching context ..");
        startActivity(intent);
     }
 
@@ -47,6 +49,7 @@ public class SearchActivity extends AppCompatActivity implements MaterialSearchB
 
     private synchronized AbstractDirectionsObject searchForDirection(PathFinderFactory factory){
         AbstractPathFinder pathFinder = factory.getPathFinder();
-        return pathFinder.makeRequest();
+        RequestMaker requestMaker = new RequestMaker();
+        return pathFinder.makeRequest(requestMaker);
     }
 }

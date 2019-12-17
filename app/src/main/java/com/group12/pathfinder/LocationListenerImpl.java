@@ -10,12 +10,12 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LocationListnerImpl implements LocationListener {
+public class LocationListenerImpl implements LocationListener {
     private final GoogleMap googleMaps;
     private final PathFinderFactory factory;
-    Logger LOGGER = LoggerFactory.getLogger(LocationListnerImpl.class);
+    Logger LOGGER = LoggerFactory.getLogger(LocationListenerImpl.class);
 
-    public LocationListnerImpl(GoogleMap map, PathFinderFactory factory){
+    public LocationListenerImpl(GoogleMap map, PathFinderFactory factory){
         this.googleMaps = map;
         this.factory = factory;
     }

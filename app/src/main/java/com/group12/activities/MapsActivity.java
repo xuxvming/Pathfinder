@@ -8,20 +8,26 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.Toast;
 import androidx.fragment.app.FragmentActivity;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.maps.android.PolyUtil;
 import com.group12.pathfinder.AbstractDirectionsObject;
-import com.group12.pathfinder.LocationListnerImpl;
+import com.group12.pathfinder.LocationListenerImpl;
 import com.group12.pathfinder.PathFinderFactory;
-import com.group12.permission.PermissionChecker;
+import com.group12.transport.AbstractTransportResponse;
+import com.group12.transport.TramStops;
+import com.group12.utils.PermissionChecker;
+import com.group12.utils.RequestMaker;
+import com.group12.utils.ResponseObject;
 
 import java.util.List;
 
@@ -59,8 +65,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                         }
         );
 
-
-
     }
 
     /**
@@ -77,9 +81,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
         AbstractDirectionsObject response = (AbstractDirectionsObject) getIntent().getSerializableExtra("Response");
         if (response != null){
-            addMarkersToMap(response,mMap);
-            positionCamera(response,mMap);
-            addPolyline(response,mMap);
+            if (response.getOverviewPolyline()!=null){
+                addMarkersToMap(response,mMap);
+                addPolyline(response,mMap);
+            }else{
+                Toast.makeText(getApplicationContext(),"Path Not Found :(",Toast.LENGTH_SHORT).show();
+            }
         }
 
         locationButton.setOnClickListener(new OnClickListener() {
@@ -88,24 +95,37 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onClick(View view) {
                 LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                 if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
-                    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, new LocationListnerImpl(mMap, factory));
+                    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, new LocationListenerImpl(mMap, factory));
                 } else if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListnerImpl(mMap, factory));
+                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListenerImpl(mMap, factory));
                 }
             }
 
         });
-
         locationButton.performClick();
+        List<AbstractTransportResponse> luasStops = TramStops.getTramStops(new RequestMaker());
+        assert luasStops != null;
+        positionCamera(new LatLng(luasStops.get(0).getLatitude(),luasStops.get(0).getLongitude()),mMap);
+        for (AbstractTransportResponse response1: luasStops){
+            addMarkersToMap(response1,mMap);
+        }
     }
 
-    private void addMarkersToMap(AbstractDirectionsObject results, GoogleMap mMap) {
-        mMap.addMarker(new MarkerOptions().position(new LatLng(results.getOriginLat(), results.getOriginLng())));
-        mMap.addMarker(new MarkerOptions().position(new LatLng(results.getDestinationLat(), results.getDestinationLng())));
+    private void addMarkersToMap(ResponseObject results, GoogleMap mMap) {
+        if (results instanceof AbstractDirectionsObject){
+            AbstractDirectionsObject result = (AbstractDirectionsObject) results;
+            mMap.addMarker(new MarkerOptions().position(new LatLng(result.getOriginLat(), result.getOriginLng())));
+            mMap.addMarker(new MarkerOptions().position(new LatLng(result.getDestinationLat(), result.getDestinationLng())));
+            positionCamera(new LatLng(result.getOriginLat(),result.getOriginLng()),mMap);
+        }
+        if (results instanceof AbstractTransportResponse){
+            AbstractTransportResponse result = (AbstractTransportResponse) results;
+            mMap.addMarker(new MarkerOptions().title(result.getStopName()).position(new LatLng(result.getLatitude(),result.getLongitude())).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)));
+        }
     }
 
-    private void positionCamera(AbstractDirectionsObject results, GoogleMap mMap) {
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(results.getOriginLat(), results.getOriginLng()), 12));
+    private void positionCamera(LatLng position, GoogleMap mMap) {
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 12));
     }
 
     private void addPolyline(AbstractDirectionsObject results, GoogleMap mMap) {

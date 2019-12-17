@@ -1,8 +1,9 @@
-package com.group12.pathfinder;
+package com.group12.utils;
 
 import java.util.HashMap;
 
 public class RequestParams extends HashMap{
+
     @Override
     public String toString(){
         StringBuilder res = new StringBuilder();

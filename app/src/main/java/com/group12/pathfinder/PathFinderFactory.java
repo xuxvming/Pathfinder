@@ -1,9 +1,6 @@
 package com.group12.pathfinder;
 
 import android.content.Context;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
-import android.os.Bundle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,11 +34,11 @@ public class PathFinderFactory implements Serializable {
         this.destination = destination;
     }
 
-    public String getOrigin() {
+    private String getOrigin() {
         return origin;
     }
 
-    public void setOrigin(String origin) {
+    void setOrigin(String origin) {
         this.origin = origin;
     }
 
@@ -52,6 +49,7 @@ public class PathFinderFactory implements Serializable {
     public void setMode(String mode) {
         this.mode = mode;
     }
+
     public Context getContext() {
         return context;
     }
@@ -59,7 +57,8 @@ public class PathFinderFactory implements Serializable {
     public void setContext(Context context) {
         this.context = context;
     }
-    public String getDestination() {
+
+    private String getDestination() {
         return destination;
     }
 

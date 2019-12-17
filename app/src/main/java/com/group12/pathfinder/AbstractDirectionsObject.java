@@ -1,10 +1,8 @@
 package com.group12.pathfinder;
 
-import com.google.android.gms.maps.model.LatLng;
+import com.group12.utils.ResponseObject;
 
-import java.io.Serializable;
-
-public class AbstractDirectionsObject implements Serializable {
+public class AbstractDirectionsObject extends ResponseObject {
     private String overviewPolyline;
     private double originLat;
     private double originLng;
