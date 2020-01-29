@@ -1,8 +1,6 @@
 package com.group12.transport;
 
-import android.app.DownloadManager.Request;
 import android.os.AsyncTask;
-import android.view.animation.TranslateAnimation;
 import com.group12.utils.RequestMaker;
 import org.junit.Test;
 
