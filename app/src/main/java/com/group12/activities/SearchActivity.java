@@ -51,5 +51,6 @@ public class SearchActivity extends AppCompatActivity implements MaterialSearchB
         AbstractPathFinder pathFinder = factory.getPathFinder();
         RequestMaker requestMaker = new RequestMaker();
         return pathFinder.makeRequest(requestMaker);
+        //TODO:handle P2P data transfer here
     }
 }
