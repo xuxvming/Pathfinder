@@ -40,6 +40,7 @@ import android.view.View;
 import android.widget.Toast;
 
 
+import androidx.appcompat.app.AppCompatActivity;
 import com.group12.p2p.DeviceDetailFragment;
 import com.group12.p2p.DeviceListFragment;
 import com.group12.p2p.WiFiDirectBroadcastReceiver;
@@ -51,7 +52,7 @@ import com.group12.p2p.WiFiDirectBroadcastReceiver;
  * The application should also register a BroadcastReceiver for notification of
  * WiFi state related events.
  */
-public class WiFiDirectActivity extends Activity implements ChannelListener, DeviceListFragment.DeviceActionListener {
+public class WiFiDirectActivity extends AppCompatActivity implements ChannelListener, DeviceListFragment.DeviceActionListener {
 
     public static final String TAG = "wifidirectdemo";
 
@@ -110,7 +111,7 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
         }
 
         receiver = new WiFiDirectBroadcastReceiver(manager, channel, this);
-        registerReceiver(receiver, intentFilter);
+        //registerReceiver(receiver, intentFilter);
     }
 
     /** register the BroadcastReceiver with the intent values to be matched */

@@ -32,7 +32,7 @@ public class SearchActivity extends AppCompatActivity implements MaterialSearchB
 
     @Override
     public void onSearchConfirmed(CharSequence text) {
-       PathFinderFactory factory = (PathFinderFactory) getIntent().getSerializableExtra("PathFinderFactory");
+       PathFinderFactory factory = (PathFinderFactory) getIntent().getSerializableExtra(PathFinderFactory.class.getName());
        String destination = text.toString();
        factory.setDestination(destination);
        AbstractDirectionsObject response = searchForDirection(factory);
