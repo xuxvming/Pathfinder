@@ -51,6 +51,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
         locationButton = findViewById(R.id.location_button);
         searchButton = findViewById(R.id.search_button);
+        final FloatingActionButton p2pButton = findViewById(R.id.p2p);
+        p2pButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                P2PManager p2PManager = new P2PManager();
+//                p2PManager.makeConnection(MapsActivity.this,"hello");
+                Intent intent = new Intent(MapsActivity.this,WiFiDirectActivity.class);
+                startActivity(intent);
+
+            }
+        });
 
         factory.setContext(MapsActivity.this);
 
@@ -59,7 +70,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                             @Override
                                             public void onClick(View view) {
                                                 Intent intent = new Intent(MapsActivity.this,SearchActivity.class);
-                                                intent.putExtra("PathFinderFactory",factory);
+                                                factory.setMode("GoogleMaps");
+                                                intent.putExtra(PathFinderFactory.class.getName(),factory);
                                                 startActivity(intent);
                                             }
                                         }
