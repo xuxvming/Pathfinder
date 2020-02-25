@@ -2,12 +2,17 @@ package com.group12.activities;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.MultiAutoCompleteTextView;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.fragment.app.FragmentActivity;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -28,7 +33,7 @@ import com.group12.transport.TramStops;
 import com.group12.utils.PermissionChecker;
 import com.group12.utils.RequestMaker;
 import com.group12.utils.ResponseObject;
-
+import com.group12.activities.WifiDirectService.MyLocalBinder;
 import java.util.List;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
@@ -38,9 +43,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private FloatingActionButton searchButton;
     private static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
     private final PathFinderFactory factory = new PathFinderFactory();
+    WifiDirectService wifiDirectService;
+    boolean isBound = false;
+    private ServiceConnection myConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder service) {
+            MyLocalBinder binder = (MyLocalBinder) service;
+            wifiDirectService = binder.getService();
+            isBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            isBound = false;
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -55,16 +76,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         p2pButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-//                P2PManager p2PManager = new P2PManager();
-//                p2PManager.makeConnection(MapsActivity.this,"hello");
-                Intent intent = new Intent(MapsActivity.this,WiFiDirectActivity.class);
-                startActivity(intent);
-
+                //Intent intent = new Intent(MapsActivity.this,WiFiDirectActivity.class);
+                //startActivity(intent);
+                showTime(v);
             }
         });
 
         factory.setContext(MapsActivity.this);
-
 
         searchButton.setOnClickListener(new OnClickListener() {
                                             @Override
@@ -76,7 +94,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                             }
                                         }
         );
-
+        Intent intent = new Intent(this, WifiDirectService.class);
+        bindService(intent, myConnection, Context.BIND_AUTO_CREATE);
     }
 
     /**
@@ -145,4 +164,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         List<LatLng> decoded = PolyUtil.decode(polyline);
         mMap.addPolyline(new PolylineOptions().addAll(decoded).color(R.color.polylinecolor));
     }
+
+    public void showTime(View view)
+    {
+        String currentTime = wifiDirectService.getCurrentTime();
+        TextView myTextView = (TextView) findViewById(R.id.myTextView);
+        myTextView.setText(currentTime);
+    }
+
+
 }

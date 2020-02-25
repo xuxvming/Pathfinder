@@ -2,7 +2,6 @@
 package com.group12.activities;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -61,7 +60,7 @@ public class WiFiDirectActivity extends AppCompatActivity implements ChannelList
     private final IntentFilter intentFilter = new IntentFilter();
     private Channel channel;
     private BroadcastReceiver receiver = null;
-    private TextView statusTxtView;
+
 
     /**
      * @param isWifiP2pEnabled the isWifiP2pEnabled to set
@@ -129,7 +128,7 @@ public class WiFiDirectActivity extends AppCompatActivity implements ChannelList
                 Toast.makeText(WiFiDirectActivity.this,"Failed to add a service",Toast.LENGTH_LONG);
             }
         });
-        startDiscovery();
+
     }
 
 
