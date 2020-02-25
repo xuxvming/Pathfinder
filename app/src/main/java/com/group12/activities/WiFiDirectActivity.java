@@ -46,11 +46,10 @@ import java.util.Map;
  */
 public class WiFiDirectActivity extends AppCompatActivity implements ChannelListener, DeviceListFragment.DeviceActionListener {
 
-    public static final String TAG = "WifiService";
+    public static final String TAG = "WifiServiceDiscovery";
     public static final String SERVICE_INSTANCE = "wayfinder";
     public static final String TXTRECORD_PROP_AVAILABLE = "available";
     public static final String SERVICE_REG_TYPE = "_presence._tcp";
-    public static final String TAG = "WiFiDirectActivity";
 
     private static final int PERMISSIONS_REQUEST_CODE_ACCESS_FINE_LOCATION = 1001;
 
