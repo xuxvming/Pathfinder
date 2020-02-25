@@ -1,4 +1,3 @@
-// Copyright 2011 Google Inc. All Rights Reserved.
 
 package com.group12.p2p;
 
@@ -75,7 +74,6 @@ public class FileTransferService extends IntentService {
                         try {
                             socket.close();
                         } catch (IOException e) {
-                            // Give up
                             e.printStackTrace();
                         }
                     }

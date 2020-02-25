@@ -4,9 +4,7 @@
     <color name="colorPrimaryDark">#4b636e</color>
     <color name="colorAccent">#B0BEC5</color>
     <color name="colorWhite">#fafafa</color>
-    <color name="transparentBlack">#96000000</color>
     <color name="polylinecolor">#ff00ffff</color>
-    <color name="status_bar_color">#FF000000</color>
     <color name="layout_border_color">#FF111111</color>
 </resources>
 

@@ -29,6 +29,9 @@ import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.ActionListener;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.net.wifi.p2p.WifiP2pManager.ChannelListener;
+import android.net.wifi.p2p.WifiP2pManager.DnsSdServiceResponseListener;
+import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
+import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -37,6 +40,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -44,6 +48,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.group12.p2p.DeviceDetailFragment;
 import com.group12.p2p.DeviceListFragment;
 import com.group12.p2p.WiFiDirectBroadcastReceiver;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * An activity that uses WiFi Direct APIs to discover and connect with available
@@ -54,7 +61,10 @@ import com.group12.p2p.WiFiDirectBroadcastReceiver;
  */
 public class WiFiDirectActivity extends AppCompatActivity implements ChannelListener, DeviceListFragment.DeviceActionListener {
 
-    public static final String TAG = "wifidirectdemo";
+    public static final String TAG = "WifiService";
+    public static final String SERVICE_INSTANCE = "wayfinder";
+    public static final String TXTRECORD_PROP_AVAILABLE = "available";
+    public static final String SERVICE_REG_TYPE = "_presence._tcp";
 
     private static final int PERMISSIONS_REQUEST_CODE_ACCESS_FINE_LOCATION = 1001;
 
@@ -62,9 +72,11 @@ public class WiFiDirectActivity extends AppCompatActivity implements ChannelList
     private boolean isWifiP2pEnabled = false;
     private boolean retryChannel = false;
 
+
     private final IntentFilter intentFilter = new IntentFilter();
     private Channel channel;
     private BroadcastReceiver receiver = null;
+    private TextView statusTxtView;
 
     /**
      * @param isWifiP2pEnabled the isWifiP2pEnabled to set
@@ -111,8 +123,31 @@ public class WiFiDirectActivity extends AppCompatActivity implements ChannelList
         }
 
         receiver = new WiFiDirectBroadcastReceiver(manager, channel, this);
-        //registerReceiver(receiver, intentFilter);
+        registerReceiver(receiver, intentFilter);
+        startRegistrationAndDiscovery();
     }
+
+
+    private void startRegistrationAndDiscovery() {
+        Map<String, String> record = new HashMap<String, String>();
+        record.put(TXTRECORD_PROP_AVAILABLE, "visible");
+        WifiP2pDnsSdServiceInfo service = WifiP2pDnsSdServiceInfo.newInstance(
+                SERVICE_INSTANCE, SERVICE_REG_TYPE, record);
+        manager.addLocalService(channel, service, new ActionListener() {
+            @Override
+            public void onSuccess() {
+                Toast.makeText(WiFiDirectActivity.this,"Added Local Service",Toast.LENGTH_LONG);
+
+            }
+            @Override
+            public void onFailure(int error) {
+                Toast.makeText(WiFiDirectActivity.this,"Failed to add a service",Toast.LENGTH_LONG);
+            }
+        });
+        startDiscovery();
+    }
+
+
 
     /** register the BroadcastReceiver with the intent values to be matched */
     @Override
@@ -152,6 +187,63 @@ public class WiFiDirectActivity extends AppCompatActivity implements ChannelList
         return true;
     }
 
+    private void startDiscovery(){
+        // After attaching listeners, create a service request and initiate
+        // discovery.
+        final DeviceListFragment fragment = (DeviceListFragment) getFragmentManager()
+                .findFragmentById(R.id.frag_list);
+        fragment.onInitiateDiscovery();
+        manager.setDnsSdResponseListeners(channel, new DnsSdServiceResponseListener() {
+
+                    @Override
+                    public void onDnsSdServiceAvailable(String instanceName,
+                                                        String registrationType, WifiP2pDevice srcDevice) {
+                        if (instanceName.equalsIgnoreCase(SERVICE_INSTANCE)) {
+                            if (fragment != null) {
+                                fragment.addToList(srcDevice);
+                                Log.d(TAG, "onBonjourServiceAvailable "
+                                        + instanceName);
+                            }
+                        }
+                    }
+                }, new WifiP2pManager.DnsSdTxtRecordListener() {
+                    /**
+                     * A new TXT record is available. Pick up the advertised
+                     * buddy name.
+                     */
+                    @Override
+                    public void onDnsSdTxtRecordAvailable(
+                            String fullDomainName, Map<String, String> record,
+                            WifiP2pDevice device) {
+                        Log.d(TAG,
+                                device.deviceName + " is "
+                                        + record.get(TXTRECORD_PROP_AVAILABLE));
+                    }
+                });
+        WifiP2pDnsSdServiceRequest serviceRequest = WifiP2pDnsSdServiceRequest.newInstance();
+        manager.addServiceRequest(channel, serviceRequest,
+                new ActionListener() {
+                    @Override
+                    public void onSuccess() {
+                        Toast.makeText(WiFiDirectActivity.this,"Added service discovery request",Toast.LENGTH_LONG);
+                    }
+                    @Override
+                    public void onFailure(int arg0) {
+                        Toast.makeText(WiFiDirectActivity.this,"Failed adding service discovery request",Toast.LENGTH_LONG);
+                    }
+                });
+        manager.discoverServices(channel, new ActionListener() {
+            @Override
+            public void onSuccess() {
+                Toast.makeText(WiFiDirectActivity.this,"Added service discovery request",Toast.LENGTH_LONG);
+            }
+
+            @Override
+            public void onFailure(int reason) {
+
+            }
+        });
+    }
     /*
      * (non-Javadoc)
      * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
@@ -168,7 +260,7 @@ public class WiFiDirectActivity extends AppCompatActivity implements ChannelList
 
                     startActivity(new Intent(Settings.ACTION_WIRELESS_SETTINGS));
                 } else {
-                    Log.e(TAG, "channel or manager is null");
+                    Log.e(SERVICE_INSTANCE, "channel or manager is null");
                 }
                 return true;
 
@@ -178,23 +270,25 @@ public class WiFiDirectActivity extends AppCompatActivity implements ChannelList
                             Toast.LENGTH_SHORT).show();
                     return true;
                 }
-                final DeviceListFragment fragment = (DeviceListFragment) getFragmentManager()
-                        .findFragmentById(R.id.frag_list);
-                fragment.onInitiateDiscovery();
-                manager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
+                startDiscovery();
 
-                    @Override
-                    public void onSuccess() {
-                        Toast.makeText(WiFiDirectActivity.this, "Discovery Initiated",
-                                Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void onFailure(int reasonCode) {
-                        Toast.makeText(WiFiDirectActivity.this, "Discovery Failed : " + reasonCode,
-                                Toast.LENGTH_SHORT).show();
-                    }
-                });
+//                final DeviceListFragment fragment = (DeviceListFragment) getFragmentManager()
+//                        .findFragmentById(R.id.frag_list);
+//                fragment.onInitiateDiscovery();
+//                manager.discoverServices(channel, new WifiP2pManager.ActionListener() {
+//
+//                    @Override
+//                    public void onSuccess() {
+//                        Toast.makeText(WiFiDirectActivity.this, "Discovery Initiated",
+//                                Toast.LENGTH_SHORT).show();
+//                    }
+//
+//                    @Override
+//                    public void onFailure(int reasonCode) {
+//                        Toast.makeText(WiFiDirectActivity.this, "Discovery Failed : " + reasonCode,
+//                                Toast.LENGTH_SHORT).show();
+//                    }
+//                });
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -206,7 +300,6 @@ public class WiFiDirectActivity extends AppCompatActivity implements ChannelList
         DeviceDetailFragment fragment = (DeviceDetailFragment) getFragmentManager()
                 .findFragmentById(R.id.frag_detail);
         fragment.showDetails(device);
-
     }
 
     @Override
@@ -238,12 +331,10 @@ public class WiFiDirectActivity extends AppCompatActivity implements ChannelList
                 Log.d(TAG, "Disconnect failed. Reason :" + reasonCode);
 
             }
-
             @Override
             public void onSuccess() {
                 fragment.getView().setVisibility(View.GONE);
             }
-
         });
     }
 
@@ -298,4 +389,5 @@ public class WiFiDirectActivity extends AppCompatActivity implements ChannelList
         }
 
     }
+
 }
