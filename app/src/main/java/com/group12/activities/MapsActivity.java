@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.location.LocationManager;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.view.View;
@@ -51,6 +52,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             MyLocalBinder binder = (MyLocalBinder) service;
             wifiDirectService = binder.getService();
             isBound = true;
+            setupWifiDirectService();
         }
 
         @Override
@@ -73,14 +75,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         locationButton = findViewById(R.id.location_button);
         searchButton = findViewById(R.id.search_button);
         final FloatingActionButton p2pButton = findViewById(R.id.p2p);
-        p2pButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //Intent intent = new Intent(MapsActivity.this,WiFiDirectActivity.class);
-                //startActivity(intent);
-                showTime(v);
-            }
-        });
+
 
         factory.setContext(MapsActivity.this);
 
@@ -96,6 +91,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         );
         Intent intent = new Intent(this, WifiDirectService.class);
         bindService(intent, myConnection, Context.BIND_AUTO_CREATE);
+
+        p2pButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //Intent intent = new Intent(MapsActivity.this,WiFiDirectActivity.class);
+                //startActivity(intent);
+                discoverPeers(v);
+            }
+        });
     }
 
     /**
@@ -140,6 +144,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         for (AbstractTransportResponse response1: luasStops){
             addMarkersToMap(response1,mMap);
         }
+
     }
 
     private void addMarkersToMap(ResponseObject results, GoogleMap mMap) {
@@ -165,12 +170,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.addPolyline(new PolylineOptions().addAll(decoded).color(R.color.polylinecolor));
     }
 
-    public void showTime(View view)
+    public void setupWifiDirectService()
     {
-        String currentTime = wifiDirectService.getCurrentTime();
-        TextView myTextView = (TextView) findViewById(R.id.myTextView);
-        myTextView.setText(currentTime);
+        wifiDirectService.initialiseWifiService(this);
+        if(wifiDirectService.getManager() == null){
+            //todo
+        }
+
     }
 
+    public void discoverPeers(View view)
+    {
+        wifiDirectService.startDiscovery();
+        TextView myTextView = (TextView) findViewById(R.id.myTextView);
+//        WifiP2pManager manager = wifiDirectService.getManager();
+//        myTextView.setText(manager.WIFI_P2P_DISCOVERY_CHANGED_ACTION);
+    }
 
 }
