@@ -7,9 +7,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.location.LocationManager;
+import android.net.Uri;
+import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.MultiAutoCompleteTextView;
@@ -26,6 +29,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.maps.android.PolyUtil;
+import com.group12.p2p.FileTransferService;
 import com.group12.pathfinder.AbstractDirectionsObject;
 import com.group12.pathfinder.LocationListenerImpl;
 import com.group12.pathfinder.PathFinderFactory;
@@ -40,6 +44,7 @@ import java.util.List;
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
+    private WifiP2pInfo info;
     private FloatingActionButton locationButton;
     private FloatingActionButton searchButton;
     private static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
@@ -172,7 +177,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public void setupWifiDirectService()
     {
-        wifiDirectService.initialiseWifiService(this);
+        wifiDirectService.initialiseWifiService(this, MapsActivity.this);
         if(wifiDirectService.getManager() == null){
             //todo
         }
@@ -186,5 +191,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        WifiP2pManager manager = wifiDirectService.getManager();
 //        myTextView.setText(manager.WIFI_P2P_DISCOVERY_CHANGED_ACTION);
     }
+
+    public void setInfo(WifiP2pInfo info){
+        this.info = info;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        Uri uri = data.getData();
+        Log.d(WifiDirectService.TAG, "Intent----------- " + uri);
+        Intent serviceIntent = new Intent(this, FileTransferService.class);
+        serviceIntent.setAction(FileTransferService.ACTION_SEND_FILE);
+        serviceIntent.putExtra(FileTransferService.EXTRAS_FILE_PATH, uri.toString());
+        serviceIntent.putExtra(FileTransferService.EXTRAS_GROUP_OWNER_ADDRESS,
+                info.groupOwnerAddress.getHostAddress());
+        serviceIntent.putExtra(FileTransferService.EXTRAS_GROUP_OWNER_PORT, 8988);
+        this.startService(serviceIntent);
+    }
+
 
 }

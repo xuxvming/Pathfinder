@@ -55,11 +55,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".WiFiDirectActivity"
-            android:label="P2P"
-            android:theme="@style/AppTheme"
-            android:windowSoftInputMode="adjustNothing"></activity>
-        <activity
             android:name=".SearchActivity"
             android:label="Search"
             android:theme="@style/AppTheme"
@@ -79,9 +74,6 @@
                 android:resource="@xml/provider_paths" />
         </provider>
 
-        <service
-            android:name="com.group12.p2p.FileTransferService"
-            android:enabled="true" />
         <service
             android:name="com.group12.activities.WifiDirectService"
             android:enabled="true"

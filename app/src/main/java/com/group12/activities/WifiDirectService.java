@@ -14,6 +14,7 @@ import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.ActionListener;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.net.wifi.p2p.WifiP2pManager.DnsSdServiceResponseListener;
+import android.net.wifi.p2p.WifiP2pManager.ConnectionInfoListener;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
 import android.os.AsyncTask;
@@ -27,6 +28,8 @@ import androidx.core.content.FileProvider;
 
 
 import com.group12.p2p.WiFiDirectBroadcastReceiver;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -51,7 +54,7 @@ import java.util.Map;
  * TODO: Customize class - update intent actions, extra parameters and static
  * helper methods.
  */
-public class WifiDirectService extends IntentService implements WifiP2pManager.ConnectionInfoListener {
+public class WifiDirectService extends IntentService implements WifiP2pManager.ChannelListener {
     public static final String TAG = "WifiServiceDiscovery";
     public static final String SERVICE_INSTANCE = "wayfinder";
     public static final String TXTRECORD_PROP_AVAILABLE = "available";
@@ -99,10 +102,7 @@ public class WifiDirectService extends IntentService implements WifiP2pManager.C
      * Handle action Baz in the provided background thread with the provided
      * parameters.
      */
-    private void handleActionBaz(String param1, String param2) {
-        // TODO: Handle action Baz
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
+
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -110,12 +110,8 @@ public class WifiDirectService extends IntentService implements WifiP2pManager.C
         return myBinder;
     }
 
-    public String getCurrentTime(){
-        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss MM/dd/yyyy", Locale.US);
-        return (dateFormat.format(new Date()));
-    }
 
-    public void initialiseWifiService(Context context){
+    public void initialiseWifiService(Context context, MapsActivity activity){
         // add necessary intent values to be matched.
         mapContext = context.getApplicationContext();
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
@@ -135,7 +131,7 @@ public class WifiDirectService extends IntentService implements WifiP2pManager.C
 //            // onRequestPermissionsResult(int, String[], int[]) overridden method
 //        }
 
-        receiver = new WiFiDirectBroadcastReceiver(manager, channel, this);
+        receiver = new WiFiDirectBroadcastReceiver(manager, channel, this, mapContext, activity);
         registerReceiver(receiver, intentFilter);
         startRegistration();
     }
@@ -180,8 +176,8 @@ public class WifiDirectService extends IntentService implements WifiP2pManager.C
             public void onDnsSdServiceAvailable(String instanceName,
                                                 String registrationType, WifiP2pDevice srcDevice) {
                 if (instanceName.equalsIgnoreCase(SERVICE_INSTANCE)) {
-                    //peers.add(srcDevice);
-                    connectAndTransfer(srcDevice);
+                    Log.d(TAG, "Connecting");
+                    connect(srcDevice);
                     Log.d(TAG, "wayfinderServiceAvailable " + instanceName);
                 }
             }
@@ -225,7 +221,8 @@ public class WifiDirectService extends IntentService implements WifiP2pManager.C
         });
     }
 
-    public void connectAndTransfer(WifiP2pDevice device){
+
+    public void connect(WifiP2pDevice device){
 
         WifiP2pConfig config = new WifiP2pConfig();
         config.deviceAddress = device.deviceAddress;
@@ -249,14 +246,21 @@ public class WifiDirectService extends IntentService implements WifiP2pManager.C
 
     }
 
-    public void onConnectionInfoAvailable(final WifiP2pInfo info) {
 
 
-        if (info.groupFormed) {
-            new FileServerAsyncTask(mapContext)
-                    .execute();
+    @Override
+    public void onChannelDisconnected() {
+        // we will try once more
+        if (manager != null && !retryChannel) {
+            Toast.makeText(this, "Channel lost. Trying again", Toast.LENGTH_LONG).show();
+            resetData();
+            retryChannel = true;
+            manager.initialize(this, getMainLooper(), this);
+        } else {
+            Toast.makeText(this,
+                    "Severe! Channel is probably lost permanently. Try Disable/Re-Enable P2P.",
+                    Toast.LENGTH_LONG).show();
         }
-        // hide the connect button
     }
 
 
