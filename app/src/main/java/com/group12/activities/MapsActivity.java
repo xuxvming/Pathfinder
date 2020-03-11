@@ -9,13 +9,11 @@ import android.content.ServiceConnection;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.net.wifi.p2p.WifiP2pInfo;
-import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.MultiAutoCompleteTextView;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.fragment.app.FragmentActivity;
@@ -39,6 +37,8 @@ import com.group12.utils.PermissionChecker;
 import com.group12.utils.RequestMaker;
 import com.group12.utils.ResponseObject;
 import com.group12.activities.WifiDirectService.MyLocalBinder;
+
+import java.io.File;
 import java.util.List;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
@@ -100,8 +100,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         p2pButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Intent intent = new Intent(MapsActivity.this,WiFiDirectActivity.class);
-                //startActivity(intent);
                 discoverPeers(v);
             }
         });
@@ -188,26 +186,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     {
         wifiDirectService.startDiscovery();
         TextView myTextView = (TextView) findViewById(R.id.myTextView);
-//        WifiP2pManager manager = wifiDirectService.getManager();
-//        myTextView.setText(manager.WIFI_P2P_DISCOVERY_CHANGED_ACTION);
+
     }
 
     public void setInfo(WifiP2pInfo info){
+        Log.d(WifiDirectService.TAG, "Changing WifiP2pInfo");
         this.info = info;
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        Uri uri = data.getData();
-        Log.d(WifiDirectService.TAG, "Intent----------- " + uri);
+    public void sendFile() {
+        Log.d(WifiDirectService.TAG, "Starting Send File");
         Intent serviceIntent = new Intent(this, FileTransferService.class);
         serviceIntent.setAction(FileTransferService.ACTION_SEND_FILE);
-        serviceIntent.putExtra(FileTransferService.EXTRAS_FILE_PATH, uri.toString());
         serviceIntent.putExtra(FileTransferService.EXTRAS_GROUP_OWNER_ADDRESS,
                 info.groupOwnerAddress.getHostAddress());
         serviceIntent.putExtra(FileTransferService.EXTRAS_GROUP_OWNER_PORT, 8988);
         this.startService(serviceIntent);
+
     }
 
 

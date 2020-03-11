@@ -78,6 +78,14 @@
             android:name="com.group12.activities.WifiDirectService"
             android:enabled="true"
             android:exported="true" />
+        <service
+            android:name="com.group12.p2p.FileTransferService"
+            android:enabled="true"
+            android:exported="true" />
+        <service
+            android:name="com.group12.p2p.FileServerAsyncTask"
+            android:enabled="true"
+            android:exported="true" />
     </application>
 
 </manifest>

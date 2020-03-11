@@ -80,12 +80,10 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
 
                         activity.setInfo(info);
                         if (info.groupFormed && info.isGroupOwner) {
-                            new WifiDirectService.FileServerAsyncTask(mapContext).execute();
-
+                            Intent serviceIntent = new Intent(mapContext, FileServerAsyncTask.class);
+                            mapContext.startService(serviceIntent);
                         } else if(info.groupFormed){
-                            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                            intent.setType("image/*");
-                            activity.startActivityForResult(intent, CHOOSE_FILE_RESULT_CODE);
+                            activity.sendFile();
 
                         }
                            //  hide the connect button
@@ -102,6 +100,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
 
         }
     }
+
 
 
 }
