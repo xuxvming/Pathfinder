@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.location.LocationManager;
 import android.net.wifi.p2p.WifiP2pInfo;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -67,9 +68,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public void setupWifiDirectService()
     {
-        wifiDirectService.initialiseWifiService(this);
-        if(wifiDirectService.getManager() == null){
-            //todo
+        WifiP2pManager manager = wifiDirectService.initialiseWifiService(this);
+        if(manager == null){
+            Log.d("MapsActivity", "Hueston we have a problem");
         }
     }
 

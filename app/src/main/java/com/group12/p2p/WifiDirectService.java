@@ -91,7 +91,7 @@ public class WifiDirectService extends IntentService implements WifiP2pManager.C
     }
 
 
-    public void initialiseWifiService(Context context){
+    public WifiP2pManager initialiseWifiService(Context context){
         // add necessary intent values to be matched.
         mapContext = context.getApplicationContext();
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
@@ -105,6 +105,7 @@ public class WifiDirectService extends IntentService implements WifiP2pManager.C
         receiver = new WiFiDirectBroadcastReceiver(manager, channel, this, mapContext);
         registerReceiver(receiver, intentFilter);
         startRegistration();
+        return manager;
     }
 
     public class MyLocalBinder extends Binder {
@@ -116,36 +117,32 @@ public class WifiDirectService extends IntentService implements WifiP2pManager.C
     private void startRegistration() {
         Map<String, String> record = new HashMap<String, String>();
         record.put(TXTRECORD_PROP_AVAILABLE, "visible");
-        WifiP2pDnsSdServiceInfo service = WifiP2pDnsSdServiceInfo.newInstance(
-                SERVICE_INSTANCE, SERVICE_REG_TYPE, record);
+        WifiP2pDnsSdServiceInfo service = WifiP2pDnsSdServiceInfo.newInstance(SERVICE_INSTANCE, SERVICE_REG_TYPE, record);
         manager.addLocalService(channel, service, new ActionListener() {
             @Override
             public void onSuccess() {
-                Toast.makeText(WifiDirectService.this,"Added Local Service",Toast.LENGTH_LONG);
+                Log.d(TAG,"ADDED LOCAL SERVICE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
             }
             @Override
             public void onFailure(int error) {
-                Toast.makeText(WifiDirectService.this,"Failed to add a service",Toast.LENGTH_LONG);
+                Log.d(TAG,"Failed to add a service");
 
             }
         });
-    }
 
-    public WifiP2pManager getManager(){
-        return manager;
-    }
 
+    }
 
     public void startDiscovery(){
-        // After attaching listeners, create a service request and initiate
-        // discovery.
+        // After attaching listeners, create a service request and initiate discovery.
 
         manager.setDnsSdResponseListeners(channel, new DnsSdServiceResponseListener() {
 
             @Override
             public void onDnsSdServiceAvailable(String instanceName,
                                                 String registrationType, WifiP2pDevice srcDevice) {
+                Log.d(TAG, "DNS Response");
                 if (instanceName.equalsIgnoreCase(SERVICE_INSTANCE)) {
                     Log.d(TAG, "Connecting");
                     connect(srcDevice);
@@ -166,6 +163,7 @@ public class WifiDirectService extends IntentService implements WifiP2pManager.C
                                 + record.get(TXTRECORD_PROP_AVAILABLE));
             }
         });
+
         WifiP2pDnsSdServiceRequest serviceRequest = WifiP2pDnsSdServiceRequest.newInstance();
         manager.addServiceRequest(channel, serviceRequest,
                 new ActionListener() {
@@ -178,6 +176,7 @@ public class WifiDirectService extends IntentService implements WifiP2pManager.C
                         Log.d(TAG,"Failed adding service discovery request");
                     }
                 });
+
         manager.discoverServices(channel, new ActionListener() {
             @Override
             public void onSuccess() {
@@ -190,6 +189,7 @@ public class WifiDirectService extends IntentService implements WifiP2pManager.C
 
             }
         });
+
     }
 
 
