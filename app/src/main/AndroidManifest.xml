@@ -75,7 +75,7 @@
         </provider>
 
         <service
-            android:name="com.group12.activities.WifiDirectService"
+            android:name="com.group12.p2p.WifiDirectService"
             android:enabled="true"
             android:exported="true" />
         <service
@@ -83,7 +83,7 @@
             android:enabled="true"
             android:exported="true" />
         <service
-            android:name="com.group12.p2p.FileServerAsyncTask"
+            android:name="com.group12.p2p.FileReceiveService"
             android:enabled="true"
             android:exported="true" />
     </application>

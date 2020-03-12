@@ -1,50 +1,30 @@
-package com.group12.activities;
+package com.group12.p2p;
 
 import android.app.IntentService;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.Uri;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
-import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.ActionListener;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.net.wifi.p2p.WifiP2pManager.DnsSdServiceResponseListener;
-import android.net.wifi.p2p.WifiP2pManager.ConnectionInfoListener;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
-import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
 
-import androidx.core.content.FileProvider;
+import com.group12.activities.MapsActivity;
 
-
-import com.group12.p2p.WiFiDirectBroadcastReceiver;
-
-import org.jetbrains.annotations.NotNull;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.sql.Connection;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -111,7 +91,7 @@ public class WifiDirectService extends IntentService implements WifiP2pManager.C
     }
 
 
-    public void initialiseWifiService(Context context, MapsActivity activity){
+    public void initialiseWifiService(Context context){
         // add necessary intent values to be matched.
         mapContext = context.getApplicationContext();
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
@@ -122,13 +102,13 @@ public class WifiDirectService extends IntentService implements WifiP2pManager.C
         manager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         channel = manager.initialize(this, getMainLooper(), null);
 
-        receiver = new WiFiDirectBroadcastReceiver(manager, channel, this, mapContext, activity);
+        receiver = new WiFiDirectBroadcastReceiver(manager, channel, this, mapContext);
         registerReceiver(receiver, intentFilter);
         startRegistration();
     }
 
     public class MyLocalBinder extends Binder {
-        WifiDirectService getService() {
+        public WifiDirectService getService() {
             return WifiDirectService.this;
         }
 

@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.location.LocationManager;
-import android.net.Uri;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -28,6 +27,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.maps.android.PolyUtil;
 import com.group12.p2p.FileTransferService;
+import com.group12.p2p.WifiDirectService;
 import com.group12.pathfinder.AbstractDirectionsObject;
 import com.group12.pathfinder.LocationListenerImpl;
 import com.group12.pathfinder.PathFinderFactory;
@@ -36,19 +36,18 @@ import com.group12.transport.TramStops;
 import com.group12.utils.PermissionChecker;
 import com.group12.utils.RequestMaker;
 import com.group12.utils.ResponseObject;
-import com.group12.activities.WifiDirectService.MyLocalBinder;
+import com.group12.p2p.WifiDirectService.MyLocalBinder;
 
-import java.io.File;
 import java.util.List;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
-    private WifiP2pInfo info;
     private FloatingActionButton locationButton;
     private FloatingActionButton searchButton;
     private static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
     private final PathFinderFactory factory = new PathFinderFactory();
+
     WifiDirectService wifiDirectService;
     boolean isBound = false;
     private ServiceConnection myConnection = new ServiceConnection() {
@@ -65,6 +64,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             isBound = false;
         }
     };
+
+    public void setupWifiDirectService()
+    {
+        wifiDirectService.initialiseWifiService(this);
+        if(wifiDirectService.getManager() == null){
+            //todo
+        }
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,7 +108,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         p2pButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                discoverPeers(v);
+                wifiDirectService.startDiscovery();
+                TextView myTextView = (TextView) findViewById(R.id.myTextView);
             }
         });
     }
@@ -173,38 +182,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.addPolyline(new PolylineOptions().addAll(decoded).color(R.color.polylinecolor));
     }
 
-    public void setupWifiDirectService()
-    {
-        wifiDirectService.initialiseWifiService(this, MapsActivity.this);
-        if(wifiDirectService.getManager() == null){
-            //todo
-        }
 
-    }
-
-    public void discoverPeers(View view)
-    {
-        wifiDirectService.startDiscovery();
-        TextView myTextView = (TextView) findViewById(R.id.myTextView);
-
-    }
-
-    public void setInfo(WifiP2pInfo info){
-        Log.d(WifiDirectService.TAG, "Changing WifiP2pInfo");
-        this.info = info;
-    }
-
-
-    public void sendFile() {
-        Log.d(WifiDirectService.TAG, "Starting Send File");
-        Intent serviceIntent = new Intent(this, FileTransferService.class);
-        serviceIntent.setAction(FileTransferService.ACTION_SEND_FILE);
-        serviceIntent.putExtra(FileTransferService.EXTRAS_GROUP_OWNER_ADDRESS,
-                info.groupOwnerAddress.getHostAddress());
-        serviceIntent.putExtra(FileTransferService.EXTRAS_GROUP_OWNER_PORT, 8988);
-        this.startService(serviceIntent);
-
-    }
 
 
 }

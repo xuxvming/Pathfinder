@@ -2,33 +2,16 @@
 
 package com.group12.p2p;
 
-import android.app.Fragment;
 import android.app.IntentService;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
-import android.net.wifi.WpsInfo;
-import android.net.wifi.p2p.WifiP2pConfig;
-import android.net.wifi.p2p.WifiP2pDevice;
-import android.net.wifi.p2p.WifiP2pInfo;
-import android.net.wifi.p2p.WifiP2pManager.ConnectionInfoListener;
-import android.os.AsyncTask;
-import android.os.Bundle;;
+;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
-import androidx.core.content.FileProvider;
-import com.group12.activities.R;
-import com.group12.activities.WifiDirectService;
 
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Objects;
 
 
 /**
@@ -36,15 +19,15 @@ import java.util.Objects;
  * the stream.
  */
 
-public class FileServerAsyncTask extends IntentService {
+public class FileReceiveService extends IntentService {
 
 
 
-    public FileServerAsyncTask(String name) {
+    public FileReceiveService(String name) {
         super(name);
     }
 
-    public FileServerAsyncTask() {
+    public FileReceiveService() {
         super("FileServerAsyncTask");
     }
 

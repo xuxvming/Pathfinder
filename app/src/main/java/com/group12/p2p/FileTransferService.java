@@ -2,16 +2,10 @@
 package com.group12.p2p;
 
 import android.app.IntentService;
-import android.content.ContentResolver;
-import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.util.Log;
 //import com.group12.activities.WiFiDirectActivity;
 
-import com.group12.activities.WifiDirectService;
-
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;

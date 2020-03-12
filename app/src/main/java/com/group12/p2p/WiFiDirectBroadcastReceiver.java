@@ -1,24 +1,16 @@
 
 package com.group12.p2p;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.NetworkInfo;
-import android.net.Uri;
-import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.util.Log;
 
 import com.group12.activities.MapsActivity;
-import com.group12.activities.R;
-import com.group12.activities.WifiDirectService;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A BroadcastReceiver that notifies of important wifi p2p events.
@@ -29,7 +21,6 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
     private Channel channel;
     private WifiDirectService service;
     private Context mapContext;
-    private MapsActivity activity;
     protected static final int CHOOSE_FILE_RESULT_CODE = 20;
     /**
      * @param manager WifiP2pManager system service
@@ -37,12 +28,11 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
      * @param service service associated with the receiver
      */
     public WiFiDirectBroadcastReceiver(WifiP2pManager manager, Channel channel,
-                                       WifiDirectService service, Context context, MapsActivity activity) {
+                                       WifiDirectService service, Context context) {
         super();
         this.manager = manager;
         this.channel = channel;
         this.service = service;
-        this.activity = activity;
         this.mapContext = context;
     }
 
@@ -78,16 +68,19 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                     @Override
                     public void onConnectionInfoAvailable(WifiP2pInfo info) {
 
-                        activity.setInfo(info);
                         if (info.groupFormed && info.isGroupOwner) {
-                            Intent serviceIntent = new Intent(mapContext, FileServerAsyncTask.class);
+                            Intent serviceIntent = new Intent(mapContext, FileReceiveService.class);
                             mapContext.startService(serviceIntent);
                         } else if(info.groupFormed){
-                            activity.sendFile();
+                            Log.d(WifiDirectService.TAG, "Starting Send File");
+                            Intent serviceIntent = new Intent(mapContext, FileTransferService.class);
+                            serviceIntent.setAction(FileTransferService.ACTION_SEND_FILE);
+                            serviceIntent.putExtra(FileTransferService.EXTRAS_GROUP_OWNER_ADDRESS, info.groupOwnerAddress.getHostAddress());
+                            serviceIntent.putExtra(FileTransferService.EXTRAS_GROUP_OWNER_PORT, 8988);
+                            mapContext.startService(serviceIntent);
+                        }
 
-                        }
-                           //  hide the connect button
-                        }
+                    }
 
                 });
                 Log.d(WifiDirectService.TAG, "Network info is connected");
