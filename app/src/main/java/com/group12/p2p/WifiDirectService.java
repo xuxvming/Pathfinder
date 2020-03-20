@@ -45,6 +45,7 @@ public class WifiDirectService extends IntentService implements WifiP2pManager.C
     private WifiP2pManager manager;
     private boolean isWifiP2pEnabled = false;
     private boolean retryChannel = false;
+    private boolean isSearching = false;
 
     private Context mapContext;
     private final IntentFilter intentFilter = new IntentFilter();
@@ -121,8 +122,10 @@ public class WifiDirectService extends IntentService implements WifiP2pManager.C
         manager.addLocalService(channel, service, new ActionListener() {
             @Override
             public void onSuccess() {
-                Log.d(TAG,"ADDED LOCAL SERVICE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                Log.d(TAG,"Added local service, Starting discovery");
 
+
+                startDiscovery()
             }
             @Override
             public void onFailure(int error) {
@@ -144,9 +147,21 @@ public class WifiDirectService extends IntentService implements WifiP2pManager.C
                                                 String registrationType, WifiP2pDevice srcDevice) {
                 Log.d(TAG, "DNS Response");
                 if (instanceName.equalsIgnoreCase(SERVICE_INSTANCE)) {
-                    Log.d(TAG, "Connecting");
-                    connect(srcDevice);
+
                     Log.d(TAG, "wayfinderServiceAvailable " + instanceName);
+                    if (isSearching){
+                        Log.d(TAG, "Connecting to it");
+                        connect(srcDevice);
+
+                    }
+                    else {
+                        Log.d(TAG, "Not Searching so not Connecting to it");
+                    }
+                    // todo: add bool in here based on whether the device wants to connect to peers or not
+
+
+
+
                 }
             }
         }, new WifiP2pManager.DnsSdTxtRecordListener() {

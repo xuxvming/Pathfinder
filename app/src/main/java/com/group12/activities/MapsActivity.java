@@ -109,7 +109,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         p2pButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                wifiDirectService.startDiscovery();
+                wifiDirectService.isSearching = true;
                 TextView myTextView = (TextView) findViewById(R.id.myTextView);
             }
         });

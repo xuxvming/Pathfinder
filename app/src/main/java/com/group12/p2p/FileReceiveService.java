@@ -49,6 +49,11 @@ public class FileReceiveService extends IntentService {
 
             Log.d(WifiDirectService.TAG, "server: copying files " + f.toString());
             InputStream inputstream = client.getInputStream();
+
+            //Here we need to check the first few bytes from the inpute stream
+            //we should make these be a timestamp so that we can compare this new inputstream with
+            //the rtpi file that we alread have
+
             copyFile(inputstream, new FileOutputStream(f));
             serverSocket.close();
         } catch (IOException e) {
