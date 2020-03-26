@@ -45,7 +45,7 @@ public class WifiDirectService extends IntentService implements WifiP2pManager.C
     private WifiP2pManager manager;
     private boolean isWifiP2pEnabled = false;
     private boolean retryChannel = false;
-    private boolean isSearching = false;
+    public boolean isSearching = false;
 
     private Context mapContext;
     private final IntentFilter intentFilter = new IntentFilter();
@@ -125,7 +125,7 @@ public class WifiDirectService extends IntentService implements WifiP2pManager.C
                 Log.d(TAG,"Added local service, Starting discovery");
 
 
-                startDiscovery()
+                startDiscovery();
             }
             @Override
             public void onFailure(int error) {
@@ -213,6 +213,11 @@ public class WifiDirectService extends IntentService implements WifiP2pManager.C
         WifiP2pConfig config = new WifiP2pConfig();
         config.deviceAddress = device.deviceAddress;
         config.wps.setup = WpsInfo.PBC;
+        if (isSearching){
+            config.groupOwnerIntent = 15;
+        } else{
+            config.groupOwnerIntent = 0;
+        }
 
         manager.connect(channel, config, new ActionListener() {
 

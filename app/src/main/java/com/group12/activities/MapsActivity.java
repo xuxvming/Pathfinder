@@ -110,6 +110,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onClick(View v) {
                 wifiDirectService.isSearching = true;
+                wifiDirectService.startDiscovery();
                 TextView myTextView = (TextView) findViewById(R.id.myTextView);
             }
         });
