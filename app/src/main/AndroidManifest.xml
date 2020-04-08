@@ -2,7 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:dist="http://schemas.android.com/apk/distribution"
     package="com.group12.activities">
-
     <!--
          The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
          Google Maps Android API v2, but you must specify either coarse or fine
@@ -32,7 +31,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
+        <activity android:name=".OsmMapsActivity"></activity>
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -46,8 +45,8 @@
             android:value="AIzaSyDSD2X4p1lAIuYGWTcr7NKKPNPTAgsUD-w" />
 
         <activity
-            android:name=".MapsActivity"
-            android:label="@string/title_activity_maps">
+                android:name="com.group12.activities.OSMMapsActivity"
+                android:label="@string/title_activity_maps">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -55,7 +54,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".SearchActivity"
+            android:name="com.group12.activities.SearchActivity"
             android:label="Search"
             android:theme="@style/AppTheme"
             android:windowSoftInputMode="adjustNothing">
