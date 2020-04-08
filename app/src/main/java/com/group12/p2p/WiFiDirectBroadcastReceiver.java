@@ -68,10 +68,11 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                     @Override
                     public void onConnectionInfoAvailable(WifiP2pInfo info) {
 
-                        if (info.groupFormed && info.isGroupOwner) {
+                        if (service.isSearching) {
                             Intent serviceIntent = new Intent(mapContext, FileReceiveService.class);
                             mapContext.startService(serviceIntent);
-                        } else if(info.groupFormed){
+                            service.isSearching = false;
+                        } else {
                             Log.d(WifiDirectService.TAG, "Starting Send File");
                             Intent serviceIntent = new Intent(mapContext, FileTransferService.class);
                             serviceIntent.setAction(FileTransferService.ACTION_SEND_FILE);

@@ -56,6 +56,7 @@ public class FileReceiveService extends IntentService {
 
             copyFile(inputstream, new FileOutputStream(f));
             serverSocket.close();
+
         } catch (IOException e) {
             Log.e(WifiDirectService.TAG, e.getMessage());
         }

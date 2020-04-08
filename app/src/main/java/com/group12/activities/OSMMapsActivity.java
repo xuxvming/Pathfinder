@@ -4,117 +4,171 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.views.MapView;
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Toast;
 import android.app.Activity;
 import org.osmdroid.config.Configuration;
-import org.osmdroid.config.DefaultConfigurationProvider;
-import org.osmdroid.tileprovider.modules.SqlTileWriter;
-import org.osmdroid.tileprovider.util.StorageUtils;
-import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 import android.preference.PreferenceManager;
-import androidx.annotation.NonNull;
-
-
-import androidx.fragment.app.FragmentActivity;
-
+import androidx.core.app.ActivityCompat;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.util.GeoPoint;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationAvailability;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.group12.p2p.WifiDirectService;
+import com.group12.utils.PermissionChecker;
 
 
-public class OSMMapsActivity extends Activity {
-    public static final String TAG = "Eoin_Test_One";
+public class OSMMapsActivity extends Activity implements LocationListener {
+    public static final String TAG = "OSMMapsActivity";
+    private FloatingActionButton locationButton;
     MapView map = null;
+    public LocationManager locationManager;
+    private static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
     private MyLocationNewOverlay mMyLocationOverlay;
     IMapController mapController;
     private FusedLocationProviderClient fusedLocationclient;
     Location curr_loc = new Location("dummyprovider");
     Location LastKnownLocation = null;
+    WifiDirectService wifiDirectService;
+    boolean isBound = false;
+    private ServiceConnection myConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder service) {
+            WifiDirectService.MyLocalBinder binder = (WifiDirectService.MyLocalBinder) service;
+            wifiDirectService = binder.getService();
+            isBound = true;
+            setupWifiDirectService();
+        }
 
-    @Override public void onCreate(Bundle savedInstanceState) {
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            isBound = false;
+        }
+    };
+
+    public void setupWifiDirectService() {
+        WifiP2pManager manager = wifiDirectService.initialiseWifiService(this);
+        if (manager == null) {
+            Log.d(TAG, "Houston we have a problem");
+        }
+    }
+
+
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Context ctx = getApplicationContext();
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
         setContentView(R.layout.activity_osm_maps);
-
+        locationButton = findViewById(R.id.location_button);
+        final FloatingActionButton p2pButton = findViewById(R.id.p2p);
         map = (MapView) findViewById(R.id.map);
         map.setTileSource(TileSourceFactory.MAPNIK);
         mapController = map.getController();
         mapController.setZoom(9.5);
         fusedLocationclient = LocationServices.getFusedLocationProviderClient(this);
         Task<LocationAvailability> test = fusedLocationclient.getLocationAvailability();
-        getDeviceLocation();
+
+
+        Intent intent = new Intent(this, WifiDirectService.class);
+        bindService(intent, myConnection, Context.BIND_AUTO_CREATE);
+
+        p2pButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                wifiDirectService.isSearching = true;
+                wifiDirectService.startDiscovery();
+            }
+        });
+
+        locationButton.setOnClickListener(new OnClickListener() {
+            @SuppressLint("MissingPermission")
+            @Override
+            public void onClick(View view) {
+                getLocation();
+            }
+
+        });
+        getLocation();
     }
 
-    public void onResume(){
+    public void onResume() {
         super.onResume();
         map.onResume();
     }
 
-    public void onPause(){
+    public void onPause() {
         super.onPause();
         map.onPause();
+        locationManager.removeUpdates(this);
     }
 
-    public void onMapReady(MapView map){
-        getDeviceLocation();
-    }
-    private void getDeviceLocation() {
-        try {
-                Task<Location> locationResult = fusedLocationclient.getLastLocation();
-                locationResult.addOnCompleteListener(this, new OnCompleteListener<Location>(){
-                    @Override
-                    public void onComplete(@NonNull Task<Location> task) {
+    protected void getLocation() {
+        Log.d(TAG, "Getting Location");
+        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
-                        if (task.isSuccessful()) {
-                            // Set the map's camera position to the current location of the device.
-                            LastKnownLocation = task.getResult();
-                            GeoPoint startPoint = new GeoPoint(LastKnownLocation.getLatitude(), LastKnownLocation.getLongitude());
-                            setMapView(startPoint);
-                        } else {
-                            Log.d(TAG, "Current location is null. Using defaults.");
-                            Log.e(TAG, "Exception: %s", task.getException());
-                            GeoPoint startPoint = new GeoPoint(54.23134, 64.13213);
-                            setMapView(startPoint);
-                        }
-                    }
-                });
-        } catch(SecurityException e)  {
-            Log.e("Exception: %s", e.getMessage());
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "Requesting Location Permissions");
+            PermissionChecker.requestPermission(OSMMapsActivity.this,MY_PERMISSIONS_REQUEST_LOCATION,Manifest.permission.ACCESS_FINE_LOCATION);
+
+            return;
+        }
+
+        if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
+        } else if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
         }
     }
 
-    private void updatetLastKnownLocation(){
-        Task<Location> locationResult = fusedLocationclient.getLastLocation();
-        locationResult.addOnCompleteListener(this, new OnCompleteListener<Location>() {
-            @Override
-            public void onComplete(@NonNull Task<Location> task) {
 
-                if (task.isSuccessful()) {
-                    // Set the map's camera position to the current location of the device.
-                    LastKnownLocation = task.getResult();
-                }
-            }
-        });
+    public void onLocationChanged(Location location) {
+
+        locationManager.removeUpdates(this);
+        GeoPoint current_position = new GeoPoint(location.getLatitude(), location.getLongitude());
+        mapController.setCenter(current_position);
+
+        Log.d(TAG, "latitude:" + location.getLatitude() + " longitude:" + location.getLongitude());
     }
-    private void setMapView(GeoPoint point){
-        mapController.setCenter(point);
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
     }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults){
+        getLocation();
+    }
+
+
 }
 
 
