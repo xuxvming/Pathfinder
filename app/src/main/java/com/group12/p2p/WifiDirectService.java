@@ -19,9 +19,6 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
-
-import com.group12.activities.MapsActivity;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

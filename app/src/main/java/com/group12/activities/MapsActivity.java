@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.location.LocationManager;
-import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -27,8 +26,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.maps.android.PolyUtil;
-import com.group12.p2p.FileTransferService;
 import com.group12.p2p.WifiDirectService;
+import com.group12.p2p.WifiDirectService.MyLocalBinder;
 import com.group12.pathfinder.AbstractDirectionsObject;
 import com.group12.pathfinder.LocationListenerImpl;
 import com.group12.pathfinder.PathFinderFactory;
@@ -37,7 +36,6 @@ import com.group12.transport.TramStops;
 import com.group12.utils.PermissionChecker;
 import com.group12.utils.RequestMaker;
 import com.group12.utils.ResponseObject;
-import com.group12.p2p.WifiDirectService.MyLocalBinder;
 
 import java.util.List;
 
@@ -93,11 +91,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         factory.setContext(MapsActivity.this);
 
+
         searchButton.setOnClickListener(new OnClickListener() {
                                             @Override
                                             public void onClick(View view) {
                                                 Intent intent = new Intent(MapsActivity.this,SearchActivity.class);
-                                                factory.setMode("GoogleMaps");
+                                                factory.setMode("P2P");
                                                 intent.putExtra(PathFinderFactory.class.getName(),factory);
                                                 startActivity(intent);
                                             }
