@@ -1,17 +1,18 @@
 package com.group12.pathfinder;
 
 import com.group12.utils.RequestMaker;
+import org.osmdroid.util.GeoPoint;
 
 
 public abstract class AbstractPathFinder {
 
-    private final String origin;
-    private final String destination;
+    private final GeoPoint origin;
+    private final GeoPoint destination;
     private final String url;
     private String departureTime;
     private String mode;
 
-    AbstractPathFinder(String origin, String destination, String url) {
+    AbstractPathFinder(GeoPoint origin, GeoPoint destination, String url) {
         this.origin = origin;
         this.destination = destination;
         this.url =  url;
@@ -27,9 +28,9 @@ public abstract class AbstractPathFinder {
         return url;
     }
 
-    String getOrigin() { return origin; }
+    GeoPoint getOrigin() { return origin; }
 
-    String getDestination() { return destination; }
+    GeoPoint getDestination() { return destination; }
 
     String getDepartureTime() { return departureTime; }
 

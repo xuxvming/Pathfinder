@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.group12.utils.RequestMaker;
 import com.group12.utils.RequestParams;
+import org.osmdroid.util.GeoPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +18,7 @@ public class GoogleMapsPathFinder extends AbstractPathFinder {
 
     private final String apiKey;
 
-    public GoogleMapsPathFinder(String origin, String destination, String url,String apiKey) {
+    public GoogleMapsPathFinder(GeoPoint origin, GeoPoint destination, String url, String apiKey) {
         super(origin, destination, url);
         this.apiKey = apiKey;
     }

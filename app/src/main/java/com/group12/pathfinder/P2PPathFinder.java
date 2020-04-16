@@ -5,6 +5,7 @@ import android.util.Log;
 import com.chaquo.python.PyObject;
 import com.chaquo.python.Python;
 import com.group12.utils.RequestMaker;
+import org.osmdroid.util.GeoPoint;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -13,9 +14,9 @@ import java.util.List;
 public class P2PPathFinder extends AbstractPathFinder {
     private String cachedFile;
     private static final String GRAPH_FILE_NAME = "graph_with_bus_luas_linked.p";
-    P2PPathFinder(String origin, String destination, String url, String context) {
+    P2PPathFinder(GeoPoint origin, GeoPoint destination, String url, String cachedFile) {
         super(origin, destination, "");
-        this.cachedFile = context;
+        this.cachedFile = cachedFile;
     }
 
     @Override
@@ -25,22 +26,22 @@ public class P2PPathFinder extends AbstractPathFinder {
 
     @Override
     public AbstractDirectionsObject makeRequest(RequestMaker requestMaker) {
-        return test();
+        return getCoordinates();
     }
 
-    public Coordinates test(){
+    public Coordinates getCoordinates(){
         Log.i("file stored in: ",cachedFile);
         Python python = Python.getInstance();
         PyObject pythonFile = python.getModule("script");
-        PyObject res = pythonFile.callAttr("get_coordinates", new double[]{53.3078264, -6.3435349}, new double[]{53.3585859, -6.2355241},"bus","luas",cachedFile);
+        PyObject res = pythonFile.callAttr("get_coordinates", new double[]{getOrigin().getLatitude(), getOrigin().getLongitude()}, new double[]{53.3585859, -6.2355241},"bus","luas",cachedFile);
         List<PyObject> coordinatesList = res.asList();
-        List<LatLng> list = new ArrayList<>();
+        List<GeoPoint> list = new ArrayList<>();
         int i = 0;
         int j = 1;
         while (j < coordinatesList.size()){
             double lat = coordinatesList.get(i).toDouble();
             double lng = coordinatesList.get(j).toDouble();
-            LatLng latLng = new LatLng(lat,lng);
+            GeoPoint latLng = new GeoPoint(lat,lng);
             list.add(latLng);
             j++;
             i++;
@@ -49,30 +50,3 @@ public class P2PPathFinder extends AbstractPathFinder {
     }
 }
 
-class LatLng implements Serializable {
-    private  double lat;
-    private  double lng;
-
-    LatLng(double lat, double lng){
-        this.lat = lat;
-        this.lng = lng;
-    }
-    LatLng(){
-
-    }
-    public double getLat() {
-        return lat;
-    }
-
-    public void setLat(double lat) {
-        this.lat = lat;
-    }
-
-    public double getLng() {
-        return lng;
-    }
-
-    public void setLng(double lng) {
-        this.lng = lng;
-    }
-}

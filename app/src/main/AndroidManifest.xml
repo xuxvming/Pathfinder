@@ -45,7 +45,7 @@
             android:value="AIzaSyDSD2X4p1lAIuYGWTcr7NKKPNPTAgsUD-w" />
 
         <activity
-                android:name="com.group12.activities.MapsActivity"
+                android:name="com.group12.activities.OSMMapsActivity"
                 android:label="@string/title_activity_maps">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

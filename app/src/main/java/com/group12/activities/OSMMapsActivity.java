@@ -1,9 +1,8 @@
 package com.group12.activities;
 
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-import org.osmdroid.views.MapView;
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -15,24 +14,24 @@ import android.location.LocationManager;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.app.Activity;
-import org.osmdroid.config.Configuration;
-import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
-import android.preference.PreferenceManager;
 import androidx.core.app.ActivityCompat;
-import org.osmdroid.api.IMapController;
-import org.osmdroid.util.GeoPoint;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationAvailability;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.group12.p2p.WifiDirectService;
+import com.group12.pathfinder.AbstractDirectionsObject;
+import com.group12.pathfinder.Coordinates;
+import com.group12.pathfinder.P2PPathFinder;
 import com.group12.pathfinder.PathFinderFactory;
 import com.group12.utils.PermissionChecker;
+import org.osmdroid.api.IMapController;
+import org.osmdroid.config.Configuration;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.Polyline;
 
 
 public class OSMMapsActivity extends Activity implements LocationListener {
@@ -42,9 +41,11 @@ public class OSMMapsActivity extends Activity implements LocationListener {
     MapView map = null;
     public LocationManager locationManager;
     private static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
-    IMapController mapController;
-    WifiDirectService wifiDirectService;
+    private IMapController mapController;
+    private WifiDirectService wifiDirectService;
+    private PathFinderFactory pathFinderFactory = new PathFinderFactory();
     boolean isBound = false;
+
     private ServiceConnection myConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
@@ -82,9 +83,11 @@ public class OSMMapsActivity extends Activity implements LocationListener {
         map.setTileSource(TileSourceFactory.MAPNIK);
         mapController = map.getController();
         mapController.setZoom(9.5);
-
-
-
+        AbstractDirectionsObject response = (AbstractDirectionsObject) getIntent().getSerializableExtra("Response");
+        if (response != null){
+            Polyline line = addPolyline(response);
+            map.getOverlays().add(line);
+        }
         Intent intent = new Intent(this, WifiDirectService.class);
         bindService(intent, myConnection, Context.BIND_AUTO_CREATE);
 
@@ -95,10 +98,13 @@ public class OSMMapsActivity extends Activity implements LocationListener {
                 wifiDirectService.startDiscovery();
             }
         });
+
         searchButton.setOnClickListener(new OnClickListener() {
                                             @Override
                                             public void onClick(View view) {
+                                                getLocation();
                                                 Intent intent = new Intent(OSMMapsActivity.this,SearchActivity.class);
+                                                intent.putExtra(PathFinderFactory.class.getName(),pathFinderFactory);
                                                 startActivity(intent);
                                             }
                                         }
@@ -145,11 +151,11 @@ public class OSMMapsActivity extends Activity implements LocationListener {
 
 
     public void onLocationChanged(Location location) {
-
         locationManager.removeUpdates(this);
         GeoPoint current_position = new GeoPoint(location.getLatitude(), location.getLongitude());
         mapController.setCenter(current_position);
-
+        pathFinderFactory.setOriginLatLng(current_position);
+        pathFinderFactory.setOriginLatLng(current_position);
         Log.d(TAG, "latitude:" + location.getLatitude() + " longitude:" + location.getLongitude());
     }
 
@@ -171,6 +177,16 @@ public class OSMMapsActivity extends Activity implements LocationListener {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults){
         getLocation();
+    }
+
+    private Polyline addPolyline(AbstractDirectionsObject object){
+        Polyline line = new Polyline();
+        if (object instanceof Coordinates){
+            for (GeoPoint point:((Coordinates) object).getCoordiantelist()){
+                line.addPoint(point);
+            }
+        }
+        return line;
     }
 
 

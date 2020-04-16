@@ -56,12 +56,11 @@ public class SearchActivity extends AppCompatActivity implements MaterialSearchB
     @Override
     public void onSearchConfirmed(CharSequence text) {
        PathFinderFactory factory = (PathFinderFactory) getIntent().getSerializableExtra(PathFinderFactory.class.getName());
-       String destination = text.toString();
-       factory.setDestination(destination);
+       //TODO: getCoordinates from destination String
        factory.setGraph_location(graph_file.getAbsolutePath());
        AbstractDirectionsObject response = searchForDirection(factory);
-       Intent intent = new Intent(SearchActivity.this,MapsActivity.class);
 
+       Intent intent = new Intent(SearchActivity.this,OSMMapsActivity.class);
        intent.putExtra("Response",response);
        LOGGER.info("Switching context ..");
        startActivity(intent);
@@ -73,10 +72,10 @@ public class SearchActivity extends AppCompatActivity implements MaterialSearchB
     }
 
     private synchronized AbstractDirectionsObject searchForDirection(PathFinderFactory factory){
+        factory.setMode("P2P");
         AbstractPathFinder pathFinder = factory.getPathFinder();
         RequestMaker requestMaker = new RequestMaker();
         return pathFinder.makeRequest(requestMaker);
-        //TODO:handle P2P data transfer here
     }
 
     void writeStreamToFile(InputStream input, File file) {

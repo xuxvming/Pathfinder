@@ -7,6 +7,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import org.osmdroid.util.GeoPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,8 +26,7 @@ public class LocationListenerImpl implements LocationListener {
     public void onLocationChanged(Location location) {
        LOGGER.info("Updating locations");
        LatLng currLocation = new LatLng(location.getLatitude(), location.getLongitude());
-       String origin = currLocation.latitude + "," + currLocation.longitude;
-       factory.setOrigin(origin);
+       factory.setOriginLatLng(new GeoPoint(location.getLatitude(),location.getLongitude()));
        googleMaps.addMarker(new MarkerOptions().position(currLocation));
        googleMaps.animateCamera(CameraUpdateFactory.newLatLngZoom(currLocation,12.0f));
     }

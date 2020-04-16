@@ -18,7 +18,6 @@ public class AbstractDirectionsObject extends ResponseObject {
         return overviewPolyline;
     }
 
-
     public double getOriginLat() {
         return originLat;
     }
