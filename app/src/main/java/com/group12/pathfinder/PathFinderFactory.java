@@ -22,11 +22,12 @@ public class PathFinderFactory implements Serializable {
     private GeoPoint destinationLatLng;
     private String mode = "GoogleMaps";
     private String graph_location;
+    private int travelChoice = 2;
 
 
     public AbstractPathFinder getPathFinder(){
         if (mode.equals("P2P")){
-            return new P2PPathFinder(originLatLng,destinationLatLng,"",graph_location);
+            return new P2PPathFinder(originLatLng,destinationLatLng,"",graph_location,travelChoice);
         }
         else {
             return new GoogleMapsPathFinder(originLatLng,destinationLatLng,GOOGLE_DIRECTIONS_API,API_KEY);
@@ -64,5 +65,13 @@ public class PathFinderFactory implements Serializable {
 
     public void setGraph_location(String graph_location) {
         this.graph_location = graph_location;
+    }
+
+    public void setTravelChoice(int travelChoice) {
+        this.travelChoice = travelChoice;
+    }
+
+    public void setDestinationLatLng(GeoPoint destinationLatLng) {
+        this.destinationLatLng = destinationLatLng;
     }
 }

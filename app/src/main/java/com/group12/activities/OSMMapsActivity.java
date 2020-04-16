@@ -155,7 +155,6 @@ public class OSMMapsActivity extends Activity implements LocationListener {
         GeoPoint current_position = new GeoPoint(location.getLatitude(), location.getLongitude());
         mapController.setCenter(current_position);
         pathFinderFactory.setOriginLatLng(current_position);
-        pathFinderFactory.setOriginLatLng(current_position);
         Log.d(TAG, "latitude:" + location.getLatitude() + " longitude:" + location.getLongitude());
     }
 

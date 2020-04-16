@@ -2,10 +2,8 @@ package com.group12.activities;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -70,9 +68,8 @@ public class RealtimeDataActivity extends AppCompatActivity implements MaterialS
                 // app-defined int constant. The callback method gets the
                 // result of the request.
             }
-        } else {
-            // Permission has already been granted
-        }
+        }  // Permission has already been granted
+
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -180,7 +177,7 @@ public class RealtimeDataActivity extends AppCompatActivity implements MaterialS
         return listStringArray;
     }
 
-    public static String writeCSV(ArrayList<String> urls, String urlHost){
+    public static void writeCSV(ArrayList<String> urls, String urlHost){
         String filename = urlHost + ".csv";
         File directoryDownload = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         File logDir = new File(directoryDownload, "androidMaps"); //Creates a new folder in DOWNLOAD directory
@@ -198,11 +195,10 @@ public class RealtimeDataActivity extends AppCompatActivity implements MaterialS
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return null;
     }
 
     private static boolean hasPermissions(Context context, String... permissions) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && context != null && permissions != null) {
+        if (context != null && permissions != null) {
             for (String permission : permissions) {
                 if (ContextCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
                     return false;

@@ -23,18 +23,15 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+
 public class SearchActivity extends AppCompatActivity implements MaterialSearchBar.OnSearchActionListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SearchActivity.class);
-    private MaterialSearchBar searchBar;
-    private FloatingActionButton settingButton, realtimeButton;
-    private Bundle b;
-    private String travelParam = "0";
-    @SuppressLint("SetTextI18n")
+    private PathFinderFactory factory;
     private File graph_file;
-    private static final int MY_PERMISSIONS_REQUEST_READ = 97;
-    private static final int MY_PERMISSIONS_REQUEST_WRITE = 98;
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -49,16 +46,17 @@ public class SearchActivity extends AppCompatActivity implements MaterialSearchB
             e.printStackTrace();
         }
         setContentView(R.layout.activity_search);
-        b = getIntent().getExtras();
-        searchBar = findViewById(R.id.search_bar);
+
+        MaterialSearchBar searchBar = findViewById(R.id.search_bar);
         searchBar.setOnSearchActionListener(this);
-        settingButton = findViewById(R.id.setting_button);
-        realtimeButton = findViewById(R.id.realtime_button);
-        if(b != null) travelParam = b.getString("travelChoice");
+        FloatingActionButton settingButton = findViewById(R.id.setting_button);
+        FloatingActionButton realtimeButton = findViewById(R.id.realtime_button);
+        factory = (PathFinderFactory) getIntent().getSerializableExtra(PathFinderFactory.class.getName());
         settingButton.setOnClickListener(new View.OnClickListener() {
                                              @Override
                                              public void onClick(View view) {
                                                  Intent intent = new Intent(SearchActivity.this,PathSettingActivity.class);
+                                                 intent.putExtra(PathFinderFactory.class.getName(),factory);
                                                  startActivity(intent);
                                              }
                                          }
@@ -81,12 +79,14 @@ public class SearchActivity extends AppCompatActivity implements MaterialSearchB
 
     @Override
     public void onSearchConfirmed(CharSequence text) {
-        PathFinderFactory factory = (PathFinderFactory) getIntent().getSerializableExtra(PathFinderFactory.class.getName());
-        String destination = text.toString();
-        factory.setDestination(travelParam.concat(destination));
 
+        //TODO:need to translate the text into coordinates here
+//        String destination = text.toString();
+//        factory.setDestination(travelParam.concat(destination));
+
+        factory.setGraph_location(graph_file.getAbsolutePath());
         AbstractDirectionsObject response = searchForDirection(factory);
-        Intent intent = new Intent(SearchActivity.this,MapsActivity.class);
+        Intent intent = new Intent(SearchActivity.this,OSMMapsActivity.class);
         intent.putExtra("Response",response);
         LOGGER.info("Switching context ..");
         startActivity(intent);

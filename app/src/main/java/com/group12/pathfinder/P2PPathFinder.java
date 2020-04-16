@@ -13,10 +13,11 @@ import java.util.List;
 
 public class P2PPathFinder extends AbstractPathFinder {
     private String cachedFile;
-    private static final String GRAPH_FILE_NAME = "graph_with_bus_luas_linked.p";
-    P2PPathFinder(GeoPoint origin, GeoPoint destination, String url, String cachedFile) {
+    private int travelChoice;
+    P2PPathFinder(GeoPoint origin, GeoPoint destination, String url, String cachedFile, int travelChoice) {
         super(origin, destination, "");
         this.cachedFile = cachedFile;
+        this.travelChoice = travelChoice;
     }
 
     @Override
@@ -33,7 +34,7 @@ public class P2PPathFinder extends AbstractPathFinder {
         Log.i("file stored in: ",cachedFile);
         Python python = Python.getInstance();
         PyObject pythonFile = python.getModule("script");
-        PyObject res = pythonFile.callAttr("get_coordinates", new double[]{getOrigin().getLatitude(), getOrigin().getLongitude()}, new double[]{53.3585859, -6.2355241},"bus","luas",cachedFile);
+        PyObject res = pythonFile.callAttr("get_coordinates", new double[]{getOrigin().getLatitude(), getOrigin().getLongitude()}, new double[]{53.3585859, -6.2355241},travelChoice,cachedFile);
         List<PyObject> coordinatesList = res.asList();
         List<GeoPoint> list = new ArrayList<>();
         int i = 0;

@@ -8,37 +8,39 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
 import androidx.appcompat.app.AppCompatActivity;
+import com.group12.pathfinder.PathFinderFactory;
 
 public class PathSettingActivity extends AppCompatActivity {
-    private Button settingButton;
     private RadioButton radioButton;
     private RadioGroup radioGroup;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_path_setting);
-        settingButton = findViewById(R.id.saveSettingButton);
+        Button settingButton = findViewById(R.id.saveSettingButton);
         radioGroup = findViewById(R.id.PathRadioGroup);
+        final PathFinderFactory factory = (PathFinderFactory) getIntent().getSerializableExtra(PathFinderFactory.class.getName());
         settingButton.setOnClickListener(new View.OnClickListener() {
-                                             @SuppressLint("SetTextI18n")
                                              @Override
                                              public void onClick(View view) {
-                                                 Intent intent = new Intent(PathSettingActivity.this,SearchActivity.class);
-                                                 Bundle b = new Bundle();
+                                                 //TODO: double check if the case number is correct
                                                  int radioId = radioGroup.getCheckedRadioButtonId();
                                                  if (radioId == -1) {
-                                                     b.putString("travelChoice", "0");
+                                                     factory.setTravelChoice(1);
                                                  }
                                                  else {
                                                      radioButton = findViewById(radioId);
                                                      if (radioButton.getText().equals("Environment")) {
-                                                         b.putString("travelChoice", "2");
+                                                         factory.setTravelChoice(2);
                                                      } else if (radioButton.getText().equals("Comfort")) {
-                                                         b.putString("travelChoice", "1");
-                                                     } else b.putString("travelChoice", "0");
-                                                     intent.putExtras(b);
-                                                     startActivity(intent);
+                                                         factory.setTravelChoice(1);
+                                                     } else {
+                                                         factory.setTravelChoice(0);
+                                                     }
                                                  }
+                                                 Intent intent = new Intent(PathSettingActivity.this,SearchActivity.class);
+                                                 intent.putExtra(PathFinderFactory.class.getName(),factory);
+                                                 startActivity(intent);
                                              }
                                          }
         );
