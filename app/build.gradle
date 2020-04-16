@@ -1,17 +1,34 @@
 apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android-extensions'
-apply plugin: 'kotlin-android'
+//apply plugin: "com.github.rzabini.gradle-jython"
+apply plugin: 'com.chaquo.python'
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 28
     buildToolsVersion "29.0.2"
     defaultConfig {
         applicationId "com.group12.androidmapsservice"
-        minSdkVersion 23
-        targetSdkVersion 29
+        minSdkVersion 25
+        targetSdkVersion 28
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        ndk {
+            abiFilters "armeabi-v7a", "x86"
+        }
+        python {
+            //buildPython "/Users/xiuxuming/anaconda3/bin/python3"
+            pip {
+                install "-r", "src/main/python/requirements.txt"
+            }
+        }
+
+        sourceSets {
+            main {
+                python {
+                    srcDir "src/main/python"
+                }
+            }
+        }
     }
     testOptions {
         unitTests.returnDefaultValues = true
@@ -48,14 +65,18 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0-alpha4'
     androidTestImplementation "org.mockito:mockito-android:2.6.1"
     implementation 'org.osmdroid:osmdroid-android:6.1.5'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.3.60"
     //noinspection GradleCompatible
     implementation "com.android.support:support-v4:28.0.0"
     implementation "com.google.android.gms:play-services-location:17.0.0"
     implementation 'com.google.android.gms:play-services-tasks:17.0.0'
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+    implementation "org.apache.directory.studio:org.apache.commons.io:2.4"
+    implementation group: 'net.razorvine', name: 'pyrolite', version: '4.19'
+
 }
 
 apply plugin: 'com.google.gms.google-services'
 repositories {
     mavenCentral()
+    mavenLocal()
 }

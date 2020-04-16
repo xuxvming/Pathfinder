@@ -10,8 +10,6 @@ import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.util.Log;
 
-import com.group12.activities.MapsActivity;
-
 /**
  * A BroadcastReceiver that notifies of important wifi p2p events.
  */
