@@ -5,13 +5,13 @@ package com.group12.p2p;
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
-;
 import android.util.Log;
-
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+
+;
 
 
 /**

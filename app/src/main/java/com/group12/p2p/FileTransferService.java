@@ -4,7 +4,6 @@ package com.group12.p2p;
 import android.app.IntentService;
 import android.content.Intent;
 import android.util.Log;
-//import com.group12.activities.WiFiDirectActivity;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -12,6 +11,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+
+//import com.group12.activities.WiFiDirectActivity;
 
 /**
  * A service that process each file transfer request i.e Intent by opening a

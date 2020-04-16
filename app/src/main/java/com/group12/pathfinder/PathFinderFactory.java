@@ -1,6 +1,7 @@
 package com.group12.pathfinder;
 
 import android.content.Context;
+import org.osmdroid.util.GeoPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,31 +17,22 @@ public class PathFinderFactory implements Serializable {
     private final static String API_KEY = "AIzaSyDSD2X4p1lAIuYGWTcr7NKKPNPTAgsUD-w";
 
     private transient Context context;
-    private String origin;
-    private String destination;
+
+    private GeoPoint originLatLng;
+    private GeoPoint destinationLatLng;
     private String mode = "GoogleMaps";
+    private String graph_location;
 
 
     public AbstractPathFinder getPathFinder(){
         if (mode.equals("P2P")){
-            return null;
+            return new P2PPathFinder(originLatLng,destinationLatLng,"",graph_location);
         }
         else {
-            return new GoogleMapsPathFinder(getOrigin(),getDestination(),GOOGLE_DIRECTIONS_API,API_KEY);
+            return new GoogleMapsPathFinder(originLatLng,destinationLatLng,GOOGLE_DIRECTIONS_API,API_KEY);
         }
     }
 
-    public void setDestination(String destination) {
-        this.destination = destination;
-    }
-
-    private String getOrigin() {
-        return origin;
-    }
-
-    void setOrigin(String origin) {
-        this.origin = origin;
-    }
 
     public String getMode() {
         return mode;
@@ -58,9 +50,19 @@ public class PathFinderFactory implements Serializable {
         this.context = context;
     }
 
-    private String getDestination() {
-        return destination;
+    public GeoPoint getOriginLatLng() {
+        return originLatLng;
     }
 
+    public void setOriginLatLng(GeoPoint originLatLng) {
+        this.originLatLng = originLatLng;
+    }
 
+    public String getGraph_location() {
+        return graph_location;
+    }
+
+    public void setGraph_location(String graph_location) {
+        this.graph_location = graph_location;
+    }
 }
