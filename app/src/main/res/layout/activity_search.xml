@@ -1,18 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent" android:theme="@style/AppTheme"
-                tools:context=".SearchActivity">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#E8E6E6"
+    android:theme="@style/AppTheme"
+    tools:context=".SearchActivity">
 
 
     <com.mancj.materialsearchbar.MaterialSearchBar
-            app_speechMode="true"
-            app_hint="Search hint"
-            app_maxSuggestionsCount="10"
-            android:id="@+id/search_bar"
-            android:layout_centerInParent="true"
-            android:layout_width="376dp"
-            android:layout_height="591dp"/>
+        android:id="@+id/search_bar"
+        app_hint="Search hint"
+        app_maxSuggestionsCount="10"
+        app_speechMode="true"
+        android:layout_width="376dp"
+        android:layout_height="300dp"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_marginTop="30dp" />
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/setting_button"
+        style="@style/PrimaryButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="30dp"
+        android:layout_marginBottom="30dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:src="@drawable/ic_settings"
+        app:rippleColor="@color/layout_border_color" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/realtime_button"
+        style="@style/PrimaryButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="30dp"
+        android:layout_marginBottom="120dp"
+        android:clickable="true"
+        android:focusable="true"
+        app:rippleColor="@color/layout_border_color" />
+
+    <TextView
+        android:id="@+id/travel_params_search"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="20dp"
+        android:background="@color/colorPrimaryDark"
+        android:backgroundTintMode="multiply"
+        android:gravity="center"
+        android:text="Travel Parameters"
+        android:textColor="@color/colorAccent"
+        android:textSize="25sp" />
+
+    <TextView
+        android:id="@+id/sliderText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/travel_params_search"
+        android:layout_marginStart="22dp"
+        android:layout_marginTop="27dp"
+        android:layout_marginEnd="14dp"
+        android:layout_marginBottom="14dp"
+        android:background="#004B636E"
+        android:textColor="@color/colorPrimaryDark"
+        android:textSize="20sp" />
 </RelativeLayout>

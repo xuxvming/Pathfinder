@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#E8E6E6"
+    android:theme="@style/AppTheme"
+    tools:context=".SearchActivity">
+
+    <com.mancj.materialsearchbar.MaterialSearchBar
+        android:id="@+id/stop_search_bar"
+        android:layout_width="376dp"
+        android:layout_height="60dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="30dp" />
+
+    <TextView
+        android:id="@+id/tvRoute"
+        android:layout_width="100dp"
+        tools:text="Route"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/stop_search_bar"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="0dp"
+        android:layout_marginEnd="14dp"
+        android:layout_centerHorizontal="false"
+        android:layout_marginBottom="14dp"
+        android:background="#004B636E"
+        android:textColor="@color/colorPrimaryDark"
+        android:gravity="center"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/tvDestination"
+        tools:text="Destination"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/stop_search_bar"
+        android:layout_marginStart="22dp"
+        android:layout_marginTop="0dp"
+        android:layout_marginEnd="14dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="14dp"
+        android:background="#004B636E"
+        android:textColor="@color/colorPrimaryDark"
+        android:gravity="center"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/tvDue"
+        android:layout_width="100dp"
+        tools:text="Due"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/stop_search_bar"
+        android:layout_marginStart="297dp"
+        android:layout_marginEnd="0dp"
+        android:layout_centerHorizontal="false"
+        android:layout_marginBottom="14dp"
+        android:background="#004B636E"
+        android:textColor="@color/colorPrimaryDark"
+        android:gravity="center"
+        android:textSize="20sp" />
+
+</RelativeLayout>

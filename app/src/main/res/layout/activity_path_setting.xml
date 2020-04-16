@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#E8E6E6"
+    android:theme="@style/AppTheme"
+    tools:context=".PathSettingActivity">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="95dp"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="0dp"
+        android:background="@color/colorPrimaryDark"
+        android:backgroundTintMode="multiply"
+        android:gravity="center"
+        android:text="Travel Parameters"
+        android:textSize="32sp" />
+
+    <RadioGroup
+        android:id="@+id/PathRadioGroup"
+        android:layout_width="200dp"
+        android:layout_height="300dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="200dp">
+
+        <RadioButton
+            android:id="@+id/speedSwitch"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:backgroundTint="#FFFFFF"
+            android:buttonTint="@color/colorPrimaryDark"
+            android:onClick="checkRadioButton"
+            android:text="Speed"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="20sp" />
+
+        <RadioButton
+            android:id="@+id/envSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="100dp"
+            android:buttonTint="@color/colorPrimaryDark"
+            android:onClick="checkRadioButton"
+            android:text="Environment"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="20sp" />
+
+        <RadioButton
+            android:id="@+id/comfortSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="100dp"
+            android:buttonTint="@color/colorPrimaryDark"
+            android:onClick="checkRadioButton"
+            android:text="Comfort"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="20sp" />
+    </RadioGroup>
+
+    <Button
+        android:id="@+id/saveSettingButton"
+        android:layout_width="200dp"
+        android:layout_height="100dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="600dp"
+        android:backgroundTint="@color/colorPrimaryDark"
+        android:gravity="center"
+        android:text="Save Settings"
+        android:textColor="@color/colorAccent" />
+</RelativeLayout>
