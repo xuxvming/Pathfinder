@@ -31,20 +31,18 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.group12.p2p.WifiDirectService;
+import com.group12.pathfinder.PathFinderFactory;
 import com.group12.utils.PermissionChecker;
 
 
 public class OSMMapsActivity extends Activity implements LocationListener {
     public static final String TAG = "OSMMapsActivity";
     private FloatingActionButton locationButton;
+    private FloatingActionButton searchButton;
     MapView map = null;
     public LocationManager locationManager;
     private static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
-    private MyLocationNewOverlay mMyLocationOverlay;
     IMapController mapController;
-    private FusedLocationProviderClient fusedLocationclient;
-    Location curr_loc = new Location("dummyprovider");
-    Location LastKnownLocation = null;
     WifiDirectService wifiDirectService;
     boolean isBound = false;
     private ServiceConnection myConnection = new ServiceConnection() {
@@ -78,13 +76,13 @@ public class OSMMapsActivity extends Activity implements LocationListener {
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
         setContentView(R.layout.activity_osm_maps);
         locationButton = findViewById(R.id.location_button);
+        searchButton = findViewById(R.id.search_button);
         final FloatingActionButton p2pButton = findViewById(R.id.p2p);
         map = (MapView) findViewById(R.id.map);
         map.setTileSource(TileSourceFactory.MAPNIK);
         mapController = map.getController();
         mapController.setZoom(9.5);
-        fusedLocationclient = LocationServices.getFusedLocationProviderClient(this);
-        Task<LocationAvailability> test = fusedLocationclient.getLocationAvailability();
+
 
 
         Intent intent = new Intent(this, WifiDirectService.class);
@@ -97,7 +95,14 @@ public class OSMMapsActivity extends Activity implements LocationListener {
                 wifiDirectService.startDiscovery();
             }
         });
-
+        searchButton.setOnClickListener(new OnClickListener() {
+                                            @Override
+                                            public void onClick(View view) {
+                                                Intent intent = new Intent(OSMMapsActivity.this,SearchActivity.class);
+                                                startActivity(intent);
+                                            }
+                                        }
+        );
         locationButton.setOnClickListener(new OnClickListener() {
             @SuppressLint("MissingPermission")
             @Override
