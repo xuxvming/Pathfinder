@@ -20,6 +20,7 @@ import com.group12.utils.RequestMaker;
 import com.mancj.materialsearchbar.MaterialSearchBar;
 
 import org.apache.commons.io.FileUtils;
+import org.osmdroid.util.GeoPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,10 +80,12 @@ public class SearchActivity extends AppCompatActivity implements MaterialSearchB
 
     @Override
     public void onSearchConfirmed(CharSequence text) {
+        String[] coords = text.toString().split(",");
+        double latDouble = Double.parseDouble(coords[0]);
+        double lonDouble = Double.parseDouble(coords[1]);
 
-        //TODO:need to translate the text into coordinates here
-//        String destination = text.toString();
-//        factory.setDestination(travelParam.concat(destination));
+        GeoPoint destination = new GeoPoint(latDouble, lonDouble);
+        factory.setDestinationLatLng(destination);
 
         factory.setGraph_location(graph_file.getAbsolutePath());
         AbstractDirectionsObject response = searchForDirection(factory);
