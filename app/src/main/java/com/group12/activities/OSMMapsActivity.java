@@ -16,22 +16,31 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import androidx.core.app.ActivityCompat;
+
+
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.group12.p2p.WifiDirectService;
 import com.group12.pathfinder.AbstractDirectionsObject;
 import com.group12.pathfinder.Coordinates;
-import com.group12.pathfinder.P2PPathFinder;
 import com.group12.pathfinder.PathFinderFactory;
 import com.group12.utils.PermissionChecker;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
+import org.osmdroid.events.MapEventsReceiver;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.Projection;
+
+import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Polyline;
+
+
 
 
 public class OSMMapsActivity extends Activity implements LocationListener {
@@ -45,7 +54,6 @@ public class OSMMapsActivity extends Activity implements LocationListener {
     private WifiDirectService wifiDirectService;
     private PathFinderFactory pathFinderFactory = new PathFinderFactory();
     boolean isBound = false;
-
     private ServiceConnection myConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
@@ -83,6 +91,35 @@ public class OSMMapsActivity extends Activity implements LocationListener {
         map.setTileSource(TileSourceFactory.MAPNIK);
         mapController = map.getController();
         mapController.setZoom(9.5);
+        MapEventsReceiver mReceive = new MapEventsReceiver() {
+
+            @Override
+            public boolean singleTapConfirmedHelper(GeoPoint p) {
+                Log.d(TAG, "Single tap helper");
+                return false;
+            }
+
+            @Override
+            public boolean longPressHelper(GeoPoint p) {
+                Log.d(TAG, "LongPressHelper");
+                String longitude = Double.toString(p.getLongitude());
+                String latitude = Double.toString(p.getLatitude());
+                Log.d(TAG, "Gesture Longitude: " + longitude + " Latitude: " + latitude);
+                pathFinderFactory.setSearchText(latitude+","+longitude);
+                Intent intent = new Intent(OSMMapsActivity.this,SearchActivity.class);
+                intent.putExtra(PathFinderFactory.class.getName(),pathFinderFactory);
+                startActivity(intent);
+                return false;
+            }
+
+        };
+        //Creating a handle overlay to capture the gestures
+        MapEventsOverlay OverlayEventos = new MapEventsOverlay(getBaseContext(), mReceive);
+        map.getOverlays().add(OverlayEventos);
+
+        //Refreshing the map to draw the new overlay
+        map.invalidate();
+
         AbstractDirectionsObject response = (AbstractDirectionsObject) getIntent().getSerializableExtra("Response");
         if (response != null){
             Polyline line = addPolyline(response);
@@ -130,6 +167,20 @@ public class OSMMapsActivity extends Activity implements LocationListener {
         map.onPause();
         locationManager.removeUpdates(this);
     }
+
+    final GestureDetector gd = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
+        @Override
+        public void onLongPress(MotionEvent e) {
+            Projection project = map.getProjection();
+            GeoPoint loc = (GeoPoint) project.fromPixels((int) e.getX(), (int) e.getY());
+            String longitude = Double.toString(loc.getLongitude());
+            String latitude = Double.toString(loc.getLatitude());
+            Log.d(TAG, "Gesture Longitude: " + longitude + " Latitude: " + latitude);
+        }
+    });
+
+
+
 
     protected void getLocation() {
         Log.d(TAG, "Getting Location");
@@ -190,5 +241,6 @@ public class OSMMapsActivity extends Activity implements LocationListener {
 
 
 }
+
 
 

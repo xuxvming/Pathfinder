@@ -50,9 +50,11 @@ public class SearchActivity extends AppCompatActivity implements MaterialSearchB
 
         MaterialSearchBar searchBar = findViewById(R.id.search_bar);
         searchBar.setOnSearchActionListener(this);
+
         FloatingActionButton settingButton = findViewById(R.id.setting_button);
         FloatingActionButton realtimeButton = findViewById(R.id.realtime_button);
         factory = (PathFinderFactory) getIntent().getSerializableExtra(PathFinderFactory.class.getName());
+        searchBar.setText(factory.getSearchText());
         settingButton.setOnClickListener(new View.OnClickListener() {
                                              @Override
                                              public void onClick(View view) {

@@ -23,7 +23,7 @@ public class PathFinderFactory implements Serializable {
     private String mode = "GoogleMaps";
     private String graph_location;
     private int travelChoice = 2;
-
+    private String searchText = "";
 
     public AbstractPathFinder getPathFinder(){
         if (mode.equals("P2P")){
@@ -74,4 +74,10 @@ public class PathFinderFactory implements Serializable {
     public void setDestinationLatLng(GeoPoint destinationLatLng) {
         this.destinationLatLng = destinationLatLng;
     }
+
+    public String getSearchText(){return searchText;}
+
+    public void setSearchText(String text){this.searchText = text;}
+
+
 }

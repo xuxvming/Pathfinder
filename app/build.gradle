@@ -16,7 +16,7 @@ android {
             abiFilters "armeabi-v7a", "x86"
         }
         python {
-            //buildPython "/Users/xiuxuming/anaconda3/bin/python3"
+            buildPython "C:/Users/Spy/Anaconda3/python"
             pip {
                 install "-r", "src/main/python/requirements.txt"
             }
