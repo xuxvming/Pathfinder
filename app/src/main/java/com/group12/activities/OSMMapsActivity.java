@@ -52,6 +52,7 @@ public class OSMMapsActivity extends Activity implements LocationListener {
     private WifiDirectService wifiDirectService;
     private PathFinderFactory pathFinderFactory = new PathFinderFactory();
     boolean isBound = false;
+    private boolean centreMap = true;
     private ServiceConnection myConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
@@ -164,6 +165,7 @@ public class OSMMapsActivity extends Activity implements LocationListener {
             @SuppressLint("MissingPermission")
             @Override
             public void onClick(View view) {
+                centreMap = true;
                 getLocation();
             }
 
@@ -197,26 +199,41 @@ public class OSMMapsActivity extends Activity implements LocationListener {
     protected void getLocation() {
         Log.d(TAG, "Getting Location");
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        setLocationUpdates();
+    }
+
+
+    public void setLocationUpdates(){
+        int minTime;
+        int minDistance;
+        if (centreMap){
+            minTime = 0;
+            minDistance = 0;
+        } else{
+            minTime = 30000;
+            minDistance = 100;
+        }
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Log.d(TAG, "Requesting Location Permissions");
             PermissionChecker.requestPermission(OSMMapsActivity.this,MY_PERMISSIONS_REQUEST_LOCATION,Manifest.permission.ACCESS_FINE_LOCATION);
-
             return;
         }
-
         if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, minTime, minDistance, this);
         } else if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTime, minDistance, this);
         }
     }
 
 
     public void onLocationChanged(Location location) {
-        locationManager.removeUpdates(this);
         GeoPoint current_position = new GeoPoint(location.getLatitude(), location.getLongitude());
-        mapController.setCenter(current_position);
+        if (centreMap) {
+            mapController.setCenter(current_position);
+            centreMap = false;
+            setLocationUpdates();
+        }
         pathFinderFactory.setOriginLatLng(current_position);
         Log.d(TAG, "latitude:" + location.getLatitude() + " longitude:" + location.getLongitude());
     }
