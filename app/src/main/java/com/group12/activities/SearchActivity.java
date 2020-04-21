@@ -1,7 +1,10 @@
 package com.group12.activities;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
@@ -99,7 +102,12 @@ public class SearchActivity extends AppCompatActivity implements MaterialSearchB
     }
 
     private synchronized AbstractDirectionsObject searchForDirection(PathFinderFactory factory){
-        factory.setMode("P2P");
+        ConnectivityManager manager = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = manager.getActiveNetworkInfo();
+        if (!activeNetwork.isConnected()){
+            factory.setSource("Local");
+        }
+        factory.setSource("Local");
         AbstractPathFinder pathFinder = factory.getPathFinder();
         RequestMaker requestMaker = new RequestMaker();
         return pathFinder.makeRequest(requestMaker);

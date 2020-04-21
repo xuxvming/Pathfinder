@@ -4,7 +4,7 @@
     <color name="colorPrimaryDark">#4b636e</color>
     <color name="colorAccent">#B0BEC5</color>
     <color name="colorWhite">#fafafa</color>
-    <color name="polylinecolor_walk">#005500</color>
+    <color name="polylinecolor_walk">#7fda80</color>
     <color name="polylinecolor_drive">#000000</color>
     <color name="polylinecolor_bus">#ff9a29</color>
     <color name="polylinecolor_luas">#870a30</color>

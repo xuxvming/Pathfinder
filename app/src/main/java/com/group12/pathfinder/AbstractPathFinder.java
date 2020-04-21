@@ -9,17 +9,17 @@ public abstract class AbstractPathFinder {
     private final GeoPoint origin;
     private final GeoPoint destination;
     private final String url;
-    private String departureTime;
-    private String mode;
+    private int travelChoice;
 
-    AbstractPathFinder(GeoPoint origin, GeoPoint destination, String url) {
+    AbstractPathFinder(GeoPoint origin, GeoPoint destination,String url, int travelChoice) {
         this.origin = origin;
         this.destination = destination;
         this.url =  url;
+        this.travelChoice = travelChoice;
     }
 
     public AbstractDirectionsObject makeRequest(RequestMaker requestMaker){
-        return null;
+        return  null;
     }
 
     public abstract String createURl();
@@ -32,12 +32,13 @@ public abstract class AbstractPathFinder {
 
     GeoPoint getDestination() { return destination; }
 
-    String getDepartureTime() { return departureTime; }
+    public int getTravelChoice() {
+        return travelChoice;
+    }
 
-    String getMode() { return mode; }
-
-    public void setDepartureTime(String departureTime) { this.departureTime = departureTime; }
-
+    public void setTravelChoice(int travelChoice) {
+        this.travelChoice = travelChoice;
+    }
 }
 
 

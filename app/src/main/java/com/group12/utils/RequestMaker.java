@@ -40,7 +40,7 @@ public class RequestMaker extends AsyncTask<String, Void, String> {
 
     @Override
     protected void onPostExecute(String res){
-        //TODO handle the invalid response, add a callback listener
+
     }
 
     public void setRequestMethod(String requestMethod) {
