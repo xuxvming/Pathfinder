@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.graphics.Paint;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -21,12 +22,9 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import androidx.core.app.ActivityCompat;
-
-
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.group12.p2p.WifiDirectService;
 import com.group12.pathfinder.AbstractDirectionsObject;
-import com.group12.pathfinder.Coordinates;
 import com.group12.pathfinder.PathFinderFactory;
 import com.group12.utils.PermissionChecker;
 import org.osmdroid.api.IMapController;
@@ -36,11 +34,11 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.Projection;
-
 import org.osmdroid.views.overlay.MapEventsOverlay;
+import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polyline;
 
-
+import java.util.*;
 
 
 public class OSMMapsActivity extends Activity implements LocationListener {
@@ -122,8 +120,24 @@ public class OSMMapsActivity extends Activity implements LocationListener {
 
         AbstractDirectionsObject response = (AbstractDirectionsObject) getIntent().getSerializableExtra("Response");
         if (response != null){
-            Polyline line = addPolyline(response);
-            map.getOverlays().add(line);
+            Map<String, List<Polyline>> lines = addPolyline(response);
+            for (Map.Entry<String,List<Polyline>> entry:lines.entrySet()){
+//                    line.getOutlinePaint().setColor(getColor(entry.getKey()));
+                    map.getOverlays().addAll(entry.getValue());
+            }
+            GeoPoint origin = response.getStartPoint();
+            GeoPoint destination = response.getEndPoint();
+            Marker startMarker = new Marker(map);
+            startMarker.setTextIcon("start: " + origin.toDoubleString());
+            startMarker.setPosition(origin);
+            startMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+            map.getOverlays().add(startMarker);
+
+            Marker endMarker = new Marker(map);
+            endMarker.setTextIcon("end: " + destination.toDoubleString());
+            endMarker.setPosition(destination);
+            endMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+            map.getOverlays().add(endMarker);
         }
         Intent intent = new Intent(this, WifiDirectService.class);
         bindService(intent, myConnection, Context.BIND_AUTO_CREATE);
@@ -229,17 +243,43 @@ public class OSMMapsActivity extends Activity implements LocationListener {
         getLocation();
     }
 
-    private Polyline addPolyline(AbstractDirectionsObject object){
-        Polyline line = new Polyline();
-        if (object instanceof Coordinates){
-            for (GeoPoint point:((Coordinates) object).getCoordiantelist()){
-                line.addPoint(point);
+    private Map<String,List<Polyline>> addPolyline(AbstractDirectionsObject object){
+        Map<String, List<Polyline>> res = new HashMap();
+        Set<String> availableRoutes = object.getAvailableRoutes();
+        for (String route:availableRoutes){
+            Map<String, List<List<GeoPoint>>> tempMap = object.getAvailableRoute(route);
+            for (String mode : tempMap.keySet()){
+                for (List<GeoPoint> coordinates: tempMap.get(mode)){
+                    Polyline line = new Polyline();
+                    line.getOutlinePaint().setColor(getColor(mode));
+                    line.getOutlinePaint().setStrokeCap(Paint.Cap.ROUND);
+                    line.setGeodesic(true);
+                    line.setPoints(coordinates);
+                    if (res.containsKey(mode)){
+                        res.get(mode).add(line);
+                    }else{
+                        List<Polyline> list = new LinkedList<>();
+                        list.add(line);
+                        res.put(mode,list);
+                    }
+                }
             }
         }
-        return line;
+        return res;
     }
 
-
+    private int getColor(String mode){
+        switch (mode) {
+            case "drive":
+                return getResources().getColor(R.color.polylinecolor_drive);
+            case "walk":
+                return getResources().getColor(R.color.polylinecolor_walk);
+            case "bus":
+                return getResources().getColor(R.color.polylinecolor_bus);
+            default:
+                return getResources().getColor(R.color.polylinecolor_luas);
+        }
+    }
 }
 
 

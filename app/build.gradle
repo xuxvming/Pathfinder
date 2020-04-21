@@ -16,7 +16,7 @@ android {
             abiFilters "armeabi-v7a", "x86"
         }
         python {
-            buildPython "C:/Users/Spy/Anaconda3/python"
+            //buildPython "C:/Users/Spy/Anaconda3/python"
             pip {
                 install "-r", "src/main/python/requirements.txt"
             }
@@ -71,7 +71,9 @@ dependencies {
     implementation 'com.google.android.gms:play-services-tasks:17.0.0'
     // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
     implementation "org.apache.directory.studio:org.apache.commons.io:2.4"
-    implementation group: 'net.razorvine', name: 'pyrolite', version: '4.19'
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
+
 
 }
 

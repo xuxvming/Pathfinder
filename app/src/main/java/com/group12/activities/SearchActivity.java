@@ -1,24 +1,20 @@
 package com.group12.activities;
 
-import android.annotation.SuppressLint;
 import android.Manifest;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-
 import androidx.appcompat.app.AppCompatActivity;
-
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import androidx.core.app.ActivityCompat;
 import com.chaquo.python.Python;
 import com.chaquo.python.android.AndroidPlatform;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.group12.pathfinder.AbstractDirectionsObject;
 import com.group12.pathfinder.AbstractPathFinder;
 import com.group12.pathfinder.PathFinderFactory;
 import com.group12.utils.PermissionChecker;
 import com.group12.utils.RequestMaker;
 import com.mancj.materialsearchbar.MaterialSearchBar;
-
 import org.apache.commons.io.FileUtils;
 import org.osmdroid.util.GeoPoint;
 import org.slf4j.Logger;

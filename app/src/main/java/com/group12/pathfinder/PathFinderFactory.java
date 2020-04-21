@@ -19,15 +19,17 @@ public class PathFinderFactory implements Serializable {
     private transient Context context;
 
     private GeoPoint originLatLng;
+
+
     private GeoPoint destinationLatLng;
     private String mode = "GoogleMaps";
     private String graph_location;
-    private int travelChoice = 2;
+    private int travelChoice = 0;
     private String searchText = "";
 
     public AbstractPathFinder getPathFinder(){
         if (mode.equals("P2P")){
-            return new P2PPathFinder(originLatLng,destinationLatLng,"",graph_location,travelChoice);
+            return new LocalPathFinder(originLatLng,destinationLatLng,"",graph_location,travelChoice);
         }
         else {
             return new GoogleMapsPathFinder(originLatLng,destinationLatLng,GOOGLE_DIRECTIONS_API,API_KEY);
@@ -78,6 +80,10 @@ public class PathFinderFactory implements Serializable {
     public String getSearchText(){return searchText;}
 
     public void setSearchText(String text){this.searchText = text;}
+
+    public GeoPoint getDestinationLatLng() {
+        return destinationLatLng;
+    }
 
 
 }
