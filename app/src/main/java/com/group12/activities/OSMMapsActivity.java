@@ -194,8 +194,6 @@ public class OSMMapsActivity extends Activity implements LocationListener {
     });
 
 
-
-
     protected void getLocation() {
         Log.d(TAG, "Getting Location");
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);

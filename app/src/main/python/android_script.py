@@ -3,10 +3,13 @@ Created on Thu Apr  9 19:41:52 2020
 @author: Group12
 """
 
-import geojson
 import networkx as nx
-from heapq import heappush, heappop
+import geojson
+import requests
 from math import cos, asin, sqrt
+from heapq import heappush, heappop
+
+
 
 mode_map = {"walk": ("primary_link", "secondary_link", "tertiary_link","primary", "secondary", "tertiary", "unclassified", "residential", "living_street", "service",
                      "pedestrian", "track", "road", "footway", "steps", "bridleway", "corridor", "path", "both", "left", "right", "crossing", "elevator",
@@ -263,7 +266,7 @@ def start_here(start, end, central_mode, other_modes, case, G):
     if not central_path:
         return None
 
-    #Fill journey from start to start of central path
+        #Fill journey from start to start of central path
     is_short_path, short_path = check_if_its_short_path(start_point, central_path['start_node'], G)
     if is_short_path:
         paths['start'].append(short_path)
@@ -287,7 +290,7 @@ def start_here(start, end, central_mode, other_modes, case, G):
             if path is not None:
                 paths['end'].append(path)
 
-    #Get optimum route based off user preferences
+                #Get optimum route based off user preferences
     optimum_route = choose_optimum_route(central_path, paths, case)
     return optimum_route
 
@@ -298,9 +301,9 @@ def check_if_its_short_path(start, end, G):
     except:
         return False, None
     if walk_path['length'] < 3000:
-        return True, {'length': walk_path['length'], 'nodes': walk_path['nodes'], 'modes': ['walk']}
+        return True, {'length': walk_path['length'], 'nodes': walk_path['nodes'], 'mode': ['walk']}
     else:
-        return False, {'length': walk_path['length'], 'nodes': walk_path['nodes'], 'modes': ['walk']}
+        return False, {'length': walk_path['length'], 'nodes': walk_path['nodes'], 'mode': ['walk']}
 
 
 
@@ -322,7 +325,7 @@ def get_best_bus_path(start, end_mode_node, G):
         for path in paths:
             lengths.append(path[1]['length'])
         min_path = lengths.index(min(lengths))
-        return {'start_node': paths[min_path][0], 'end_node': end_mode_node, 'length': paths[min_path][1]['length'], 'nodes': paths[min_path][1]['nodes'], 'modes': ['bus']}
+        return {'start_node': paths[min_path][0], 'end_node': end_mode_node, 'length': paths[min_path][1]['length'], 'nodes': paths[min_path][1]['nodes'], 'mode': ['bus']}
 
 def get_central_path(start, end, central_mode, G):
     end_mode_node = closest_node_to_co_ordinate(G, end, central_mode)[0]
@@ -337,7 +340,7 @@ def get_central_path(start, end, central_mode, G):
         if len(path['nodes']) < 2:
             return None
         else:
-            return {'start_node': start_mode_node, 'end_node': end_mode_node, 'length': path['length'], 'nodes': path['nodes'], 'modes': [central_mode]}
+            return {'start_node': start_mode_node, 'end_node': end_mode_node, 'length': path['length'], 'nodes': path['nodes'], 'mode': [central_mode]}
 
 
 def fill_rest_of_journey(start, end, central_mode, G):
@@ -413,21 +416,21 @@ def choose_optimum_route(central_path, other_paths, case):
         total_length = other_paths['start'][min_start_path]['length'] + central_path['length'] + other_paths['end'][min_end_path]['length']
         full_path = format_full_path(other_paths['start'][min_start_path]['nodes'][:-1], central_path['nodes'], other_paths['end'][min_end_path]['nodes'][1:])
         modes = format_modes(other_paths['start'][min_start_path], central_path, other_paths['end'][min_end_path])
-        return {'length': total_length, 'modes': modes, 'nodes': full_path}
+        return {'length': total_length, 'mode': modes, 'nodes': full_path}
 
     def avoid_modes(central_path, other_paths, avoid_modes):
         if not other_paths['start']:
             return None
         if not other_paths['end']:
             return None
-        if [value for value in central_path['modes'] if value in avoid_modes]:
+        if [value for value in central_path['mode'] if value in avoid_modes]:
             return None
         min_start_path = get_shortest_route_that_avoids_modes(other_paths['start'], avoid_modes)
         min_end_path = get_shortest_route_that_avoids_modes(other_paths['end'], avoid_modes)
         total_length = min_start_path['length'] + central_path['length'] + min_end_path['length']
         full_path = format_full_path(min_start_path['nodes'][:-1], central_path['nodes'], min_end_path['nodes'][1:])
         modes = format_modes(min_start_path, central_path, min_end_path)
-        return {'length': total_length, 'modes': modes, 'nodes': full_path}
+        return {'length': total_length, 'mode': modes, 'nodes': full_path}
 
     def get_shortest_route_that_avoids_modes(paths, avoid_modes):
         temp_paths = []
@@ -454,16 +457,16 @@ def choose_optimum_route(central_path, other_paths, case):
         return path
 
 def get_working_modes():
-    # http = "http://35.202.105.121/status"
-    # try:
-    #     modes = ['drive']
-    #     json_response = requests.get(http).json()
-    #     for item, value in json_response.items():
-    #         if value is True:
-    #             modes.append(item)
-    #     return modes
-    # except:
-    return ['bus', 'luas', 'drive']
+    http = "http://35.202.105.121/status"
+    try:
+        modes = ['drive']
+        json_response = requests.get(http).json()
+        for item, value in json_response.items():
+            if value is True:
+                modes.append(item)
+        return modes
+    except:
+        return ['bus', 'luas', 'drive']
 
 def get_paths(start, end, case, G):
     paths = dict()
@@ -471,6 +474,7 @@ def get_paths(start, end, case, G):
     end_point = closest_node_to_co_ordinate(G, end, 'walk')[0]
     is_short, short_path = check_if_its_short_path(start_point, end_point, G)
     if is_short:
+        short_path['nodes'] = [short_path['nodes']]
         paths['walk'] = short_path
         return paths
     else:
@@ -488,14 +492,10 @@ def calculate_coordinates(G, paths):
         coordinates = []
         for node_list in item['nodes']:
             temp_node_list = []
-            if isinstance(node_list,list):
-                for node in node_list:
-                    temp_node_list.append((G.nodes.data()[node]['y'], G.nodes.data()[node]['x']))
-                coordinates.append(temp_node_list)
-                item['coordinates'] = coordinates
-            else:
-                coordinates.append((G.nodes.data()[node_list]['y'], G.nodes.data()[node_list]['x']))
-                item['coordinates'] = [coordinates]
+            for node in node_list:
+                temp_node_list.append((G.nodes.data()[node]['y'], G.nodes.data()[node]['x']))
+            coordinates.append(temp_node_list)
+        item['coordinates'] = coordinates
     return paths
 
 def get_coordinates(start, end, case, graph_location):
@@ -504,7 +504,8 @@ def get_coordinates(start, end, case, graph_location):
         G = nx.node_link_graph(graph_json)
     paths = get_paths(start, end, case, G)
     paths_with_coordinates = calculate_coordinates(G, paths)
-    print(paths_with_coordinates)
+    # print(paths_with_coordinates)
     return paths_with_coordinates
 
 
+# get_coordinates((53.2965476, -6.2201313),(53.2996109, -6.2178796), 0, 'full_graph.json')

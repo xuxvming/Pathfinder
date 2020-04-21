@@ -39,7 +39,7 @@ public class LocalPathFinder extends AbstractPathFinder {
             String method = key.toString();
             Map<PyObject,PyObject> temp = coordinatesList.get(key).asMap();
             for (PyObject subKey: temp.keySet()){
-                if (subKey.toString().equals("modes")){
+                if (subKey.toString().equals("mode")){
                     directionsObject.addAvailableModes(method,temp.get(subKey).asList());
                 }
                 if (subKey.toString().equals("coordinates")){
