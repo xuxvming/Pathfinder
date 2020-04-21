@@ -1,4 +1,4 @@
-#The Pathfinder App
+# The Pathfinder App
 An android app that supports both online and offline path finding in multiple modes.
 
 ## Prerequisite:
