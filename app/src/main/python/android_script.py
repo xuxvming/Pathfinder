@@ -3,13 +3,11 @@ Created on Thu Apr  9 19:41:52 2020
 @author: Group12
 """
 
-import networkx as nx
 import geojson
+import networkx as nx
 import requests
-from math import cos, asin, sqrt
 from heapq import heappush, heappop
-
-
+from math import cos, asin, sqrt
 
 mode_map = {"walk": ("primary_link", "secondary_link", "tertiary_link","primary", "secondary", "tertiary", "unclassified", "residential", "living_street", "service",
                      "pedestrian", "track", "road", "footway", "steps", "bridleway", "corridor", "path", "both", "left", "right", "crossing", "elevator",

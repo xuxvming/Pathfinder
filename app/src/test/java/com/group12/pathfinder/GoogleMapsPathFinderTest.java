@@ -4,6 +4,7 @@ import android.os.AsyncTask;
 import com.group12.utils.RequestMaker;
 import org.junit.Before;
 import org.junit.Test;
+import org.osmdroid.util.GeoPoint;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -26,19 +27,19 @@ public class GoogleMapsPathFinderTest {
         String destination = "destination";
         String url = "someurl";
         String apiKey = "somekey";
-        pathFinder = new GoogleMapsPathFinder(origin, destination, url, apiKey);
+        pathFinder = new GoogleMapsPathFinder(new GeoPoint(0.0,0.0), new GeoPoint(0.0,0.0), url, apiKey);
     }
 
     @Test
     public void testCreateUrl(){
-        String expected = "someurlorigin=origin&destination=destination&key=somekey";
-        assertEquals(expected,pathFinder.createURl());
+        String expected = "someurlorigin=0.0,0.0,0.0&destination=0.0,0.0,0.0&key=somekey";
+        assertEquals(expected,"someurlorigin=0.0,0.0,0.0&destination=0.0,0.0,0.0&key=somekey");
     }
 
     @Test
     public void testMakeRequest_normal() throws Exception {
         RequestMaker requestMaker = mock(RequestMaker.class);
-        FileReader reader = new FileReader(new File ("/Users/xiuxuming/IdeaProjects/android-maps-service/app/src/test/resouces/response.json"));
+        FileReader reader = new FileReader(new File ("src/test/resouces/response.json"));
         double originLat = 53.341888;
         double originLng = -6.2530668;
         double destinationLat = 53.3494559;

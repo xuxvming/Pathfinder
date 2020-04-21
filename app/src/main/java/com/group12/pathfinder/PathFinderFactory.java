@@ -22,27 +22,27 @@ public class PathFinderFactory implements Serializable {
 
 
     private GeoPoint destinationLatLng;
-    private String mode = "GoogleMaps";
+    private String srouce = "Server";
     private String graph_location;
     private int travelChoice = 0;
     private String searchText = "";
 
     public AbstractPathFinder getPathFinder(){
-        if (mode.equals("P2P")){
+        if (srouce.equals("Local")){
             return new LocalPathFinder(originLatLng,destinationLatLng,"",graph_location,travelChoice);
         }
         else {
-            return new GoogleMapsPathFinder(originLatLng,destinationLatLng,GOOGLE_DIRECTIONS_API,API_KEY);
+            return new OnlinePathFinder(originLatLng,destinationLatLng,WEB_SERVICE_API,travelChoice);
         }
     }
 
 
     public String getMode() {
-        return mode;
+        return srouce;
     }
 
-    public void setMode(String mode) {
-        this.mode = mode;
+    public void setSource(String mode) {
+        this.srouce = mode;
     }
 
     public Context getContext() {

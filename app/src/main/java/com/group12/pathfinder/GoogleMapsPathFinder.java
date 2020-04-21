@@ -19,7 +19,7 @@ public class GoogleMapsPathFinder extends AbstractPathFinder {
     private final String apiKey;
 
     public GoogleMapsPathFinder(GeoPoint origin, GeoPoint destination, String url, String apiKey) {
-        super(origin, destination, url);
+        super(origin, destination, url,1);
         this.apiKey = apiKey;
     }
 

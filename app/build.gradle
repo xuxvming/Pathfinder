@@ -1,5 +1,4 @@
 apply plugin: 'com.android.application'
-//apply plugin: "com.github.rzabini.gradle-jython"
 apply plugin: 'com.chaquo.python'
 
 android {
@@ -73,6 +72,9 @@ dependencies {
     implementation "org.apache.directory.studio:org.apache.commons.io:2.4"
     // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.6.3'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.6.3'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.6.3'
 
 
 }

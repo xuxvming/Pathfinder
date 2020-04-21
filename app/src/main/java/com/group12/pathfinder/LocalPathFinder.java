@@ -11,11 +11,10 @@ import java.util.Map;
 
 public class LocalPathFinder extends AbstractPathFinder {
     private String cachedFile;
-    private int travelChoice;
+
     LocalPathFinder(GeoPoint origin, GeoPoint destination, String url, String cachedFile, int travelChoice) {
-        super(origin, destination, "");
+        super(origin, destination, "",travelChoice);
         this.cachedFile = cachedFile;
-        this.travelChoice = travelChoice;
     }
 
     @Override
@@ -32,7 +31,7 @@ public class LocalPathFinder extends AbstractPathFinder {
         Log.i("file stored in: ",cachedFile);
         Python python = Python.getInstance();
         PyObject pythonFile = python.getModule("android_script");
-        PyObject res = pythonFile.callAttr("get_coordinates", new double[]{getOrigin().getLatitude(),getOrigin().getLongitude()}, new double[]{getDestination().getLatitude(), getDestination().getLongitude()},travelChoice,cachedFile);
+        PyObject res = pythonFile.callAttr("get_coordinates", new double[]{getOrigin().getLatitude(),getOrigin().getLongitude()}, new double[]{getDestination().getLatitude(), getDestination().getLongitude()},getTravelChoice(),cachedFile);
         Map<PyObject,PyObject> coordinatesList = res.asMap();
         LocalDirectionsObject directionsObject = new LocalDirectionsObject();
         for (PyObject key: coordinatesList.keySet()){
