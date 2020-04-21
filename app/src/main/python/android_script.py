@@ -3,11 +3,12 @@ Created on Thu Apr  9 19:41:52 2020
 @author: Group12
 """
 
-import geojson
 import networkx as nx
-import requests
-from heapq import heappush, heappop
+import geojson
 from math import cos, asin, sqrt
+from heapq import heappush, heappop
+
+
 
 mode_map = {"walk": ("primary_link", "secondary_link", "tertiary_link","primary", "secondary", "tertiary", "unclassified", "residential", "living_street", "service",
                      "pedestrian", "track", "road", "footway", "steps", "bridleway", "corridor", "path", "both", "left", "right", "crossing", "elevator",
@@ -307,7 +308,7 @@ def check_if_its_short_path(start, end, G):
 
 def get_best_bus_path(start, end_mode_node, G):
     paths = []
-    start_mode_nodes = closest_n_nodes_to_co_ordinate(G, start, 20, 'bus')
+    start_mode_nodes = closest_n_nodes_to_co_ordinate(G, start, 15, 'bus')
     for node in start_mode_nodes:
         try:
             path = shortest_path(G, sources={node}, target=end_mode_node, cutoff=None, weight='length', mode='bus')
@@ -460,17 +461,6 @@ def choose_optimum_route(central_path, other_paths, case):
         path = avoid_modes(central_path, other_paths, avoid)
         return path
 
-def get_working_modes():
-    http = "http://35.202.105.121/status"
-    try:
-        modes = ['drive']
-        json_response = requests.get(http).json()
-        for item, value in json_response.items():
-            if value is True:
-                modes.append(item)
-        return modes
-    except:
-        return ['bus', 'luas', 'drive']
 
 def get_paths(start, end, case, G):
     paths = dict()
@@ -482,7 +472,7 @@ def get_paths(start, end, case, G):
         paths['walk'] = short_path
         return paths
     else:
-        working_modes = get_working_modes()
+        working_modes = ['bus', 'luas', 'drive']
         for mode in working_modes:
             other_modes = list(working_modes)
             other_modes.remove(mode)
