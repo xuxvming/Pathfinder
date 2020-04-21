@@ -107,7 +107,6 @@ public class SearchActivity extends AppCompatActivity implements MaterialSearchB
         if (!activeNetwork.isConnected()){
             factory.setSource("Local");
         }
-        factory.setSource("Local");
         AbstractPathFinder pathFinder = factory.getPathFinder();
         RequestMaker requestMaker = new RequestMaker();
         return pathFinder.makeRequest(requestMaker);

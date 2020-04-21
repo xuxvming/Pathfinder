@@ -10,6 +10,7 @@ import org.osmdroid.util.GeoPoint;
 import java.util.Map;
 
 public class LocalPathFinder extends AbstractPathFinder {
+    private String TAG = LocalPathFinder.class.getName();
     private String cachedFile;
 
     LocalPathFinder(GeoPoint origin, GeoPoint destination, String url, String cachedFile, int travelChoice) {
@@ -19,7 +20,7 @@ public class LocalPathFinder extends AbstractPathFinder {
 
     @Override
     public String createURl() {
-        return null;
+        return "";
     }
 
     @Override
@@ -28,7 +29,8 @@ public class LocalPathFinder extends AbstractPathFinder {
     }
 
     public LocalDirectionsObject getCoordinates(){
-        Log.i("file stored in: ",cachedFile);
+        Log.e(TAG,"Connection not available");
+        Log.i(TAG,"Using local service with graph file stored in: "+cachedFile);
         Python python = Python.getInstance();
         PyObject pythonFile = python.getModule("android_script");
         PyObject res = pythonFile.callAttr("get_coordinates", new double[]{getOrigin().getLatitude(),getOrigin().getLongitude()}, new double[]{getDestination().getLatitude(), getDestination().getLongitude()},getTravelChoice(),cachedFile);

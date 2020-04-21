@@ -1,5 +1,6 @@
 package com.group12.pathfinder;
 
+import android.util.Log;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group12.utils.RequestMaker;
 import com.group12.utils.RequestParams;
@@ -13,7 +14,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 public class OnlinePathFinder extends AbstractPathFinder {
-
+    private String TAG = OnlinePathFinder.class.getName();
     OnlinePathFinder(GeoPoint origin, GeoPoint destination, String url,int travelChoice) {
         super(origin, destination, url,travelChoice);
     }
@@ -22,19 +23,22 @@ public class OnlinePathFinder extends AbstractPathFinder {
     public String createURl() {
         //TODO: need to check request parameter
         RequestParams requestParams = new RequestParams();
-        requestParams.put("origin",getOrigin());
-        requestParams.put("detination",getDestination());
+        requestParams.put("latstart",getOrigin().getLatitude());
+        requestParams.put("longstart",getOrigin().getLongitude());
+        requestParams.put("latend",getDestination().getLatitude());
+        requestParams.put("longend",getDestination().getLongitude());
         requestParams.put("case",getTravelChoice());
-        return requestParams.toString();
+        return getUrl()+requestParams.toString();
     }
 
     public AbstractDirectionsObject makeRequest(RequestMaker requestMaker){
-        requestMaker.setRequestMethod("POST");
+        requestMaker.setRequestMethod("GET");
         AbstractDirectionsObject object = new AbstractDirectionsObject();
         Map<String, List<String>> modes = new HashMap<>();
         Map<String, AbstractDirectionsObject.TravelMode> availableModes = new HashMap<>();
         try {
             String res = requestMaker.execute(createURl()).get();
+            Log.i(TAG,"Sending request to " + createURl());
             ObjectMapper objectMapper = new ObjectMapper();
             Map<String,Object> jsonMap =  objectMapper.readValue(res,Map.class);
 
