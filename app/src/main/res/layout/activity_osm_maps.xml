@@ -42,4 +42,45 @@
         android:clickable="true"
         android:focusable="true"
         android:src="@drawable/ic_wifi_tethering"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_centerInParent="true"
+        android:layout_marginRight="25dp"
+        android:layout_marginBottom="680dp"
+        android:text="Luas"
+        android:textColor="#870a30"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_centerInParent="true"
+        android:layout_marginRight="25dp"
+        android:layout_marginBottom="660dp"
+        android:text="Bus"
+        android:textColor="#ff9a29"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_centerInParent="true"
+        android:layout_marginRight="25dp"
+        android:layout_marginBottom="640dp"
+        android:text="Car"
+        android:textColor="#000000"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_centerInParent="true"
+        android:layout_marginRight="25dp"
+        android:layout_marginBottom="620dp"
+        android:text="Walk"
+        android:textColor="#005500"/>
 </RelativeLayout>
