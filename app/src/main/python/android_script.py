@@ -266,7 +266,7 @@ def start_here(start, end, central_mode, other_modes, case, G):
     if not central_path:
         return None
 
-        #Fill journey from start to start of central path
+    #Fill journey from start to start of central path
     is_short_path, short_path = check_if_its_short_path(start_point, central_path['start_node'], G)
     if is_short_path:
         paths['start'].append(short_path)
@@ -290,7 +290,7 @@ def start_here(start, end, central_mode, other_modes, case, G):
             if path is not None:
                 paths['end'].append(path)
 
-                #Get optimum route based off user preferences
+    #Get optimum route based off user preferences
     optimum_route = choose_optimum_route(central_path, paths, case)
     return optimum_route
 
@@ -309,7 +309,7 @@ def check_if_its_short_path(start, end, G):
 
 def get_best_bus_path(start, end_mode_node, G):
     paths = []
-    start_mode_nodes = closest_n_nodes_to_co_ordinate(G, start, 15, 'bus')
+    start_mode_nodes = closest_n_nodes_to_co_ordinate(G, start, 20, 'bus')
     for node in start_mode_nodes:
         try:
             path = shortest_path(G, sources={node}, target=end_mode_node, cutoff=None, weight='length', mode='bus')
@@ -325,7 +325,14 @@ def get_best_bus_path(start, end_mode_node, G):
         for path in paths:
             lengths.append(path[1]['length'])
         min_path = lengths.index(min(lengths))
-        return {'start_node': paths[min_path][0], 'end_node': end_mode_node, 'length': paths[min_path][1]['length'], 'nodes': paths[min_path][1]['nodes'], 'mode': ['bus']}
+        nodes = paths[min_path][1]['nodes']
+        full_node_list = []
+        for i in range(len(nodes)-1):
+            drive_path = shortest_path(G, sources={nodes[i]}, target=nodes[i+1], cutoff=None, weight='length', mode='drive')
+            for node in drive_path['nodes'][:-1]:
+                full_node_list.append(node)
+        full_node_list.append(nodes[-1])
+        return {'start_node': paths[min_path][0], 'end_node': end_mode_node, 'length': paths[min_path][1]['length'], 'nodes': full_node_list, 'mode': ['bus']}
 
 def get_central_path(start, end, central_mode, G):
     end_mode_node = closest_node_to_co_ordinate(G, end, central_mode)[0]
@@ -444,7 +451,6 @@ def choose_optimum_route(central_path, other_paths, case):
                 break
         return min_path
 
-
     if case == 0:
         return speed(central_path, other_paths)
     if case == 1:
@@ -508,4 +514,4 @@ def get_coordinates(start, end, case, graph_location):
     return paths_with_coordinates
 
 
-# get_coordinates((53.2965476, -6.2201313),(53.2996109, -6.2178796), 0, 'full_graph.json')
+# get_coordinates((53.2815126, -6.2341631),(53.3881208173444, -6.2659470210), 0, 'full_graph.json')
