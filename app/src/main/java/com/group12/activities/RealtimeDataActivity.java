@@ -4,6 +4,8 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -27,6 +29,7 @@ import java.util.ArrayList;
 public class RealtimeDataActivity extends AppCompatActivity implements MaterialSearchBar.OnSearchActionListener  {
     private Context mContext = RealtimeDataActivity.this;
     private static final int REQUEST = 112;
+    private boolean hasData;
     private ArrayList<String[]> railUrls;
     private ArrayList<String[]> busUrls;
     private ArrayList<String[]> luasUrls;
@@ -68,6 +71,17 @@ public class RealtimeDataActivity extends AppCompatActivity implements MaterialS
             }
         }  // Permission has already been granted
 
+        if (isNetworkConnected()){
+
+            updateRTPIData();
+        }
+        else {
+            hasData = false;
+        }
+    }
+
+
+    private void updateRTPIData(){
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -75,8 +89,23 @@ public class RealtimeDataActivity extends AppCompatActivity implements MaterialS
                 luasUrls = makeCSV("luas");
                 busUrls = makeCSV("bus");
 
+                Log.d("RTPI ACTIVITY", "updated rtpi");
+
+                hasData = true;
+
             }
         }).start();
+    }
+
+    private boolean isNetworkConnected() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
+
+        return isConnected;
     }
 
     @Override
@@ -87,6 +116,12 @@ public class RealtimeDataActivity extends AppCompatActivity implements MaterialS
     @SuppressLint("SetTextI18n")
     @Override
     public void onSearchConfirmed(CharSequence text) {
+
+        if (!hasData) {
+            Toast.makeText(getApplicationContext(), "No RTPI data available", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         String stop = text.toString();
         String[] tempB, tempL, tempR;
         TextView tvR = findViewById(R.id.tvRoute);
