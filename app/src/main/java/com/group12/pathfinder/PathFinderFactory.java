@@ -13,6 +13,7 @@ public class PathFinderFactory implements Serializable {
     private static final Logger LOGGER = LoggerFactory.getLogger(PathFinderFactory.class);
 
     private final static String GOOGLE_DIRECTIONS_API = "https://maps.googleapis.com/maps/api/directions/json?";
+
     private final static String WEB_SERVICE_API = "http://104.197.46.193/getcoords?";
     private final static String API_KEY = "AIzaSyDSD2X4p1lAIuYGWTcr7NKKPNPTAgsUD-w";
 
@@ -83,6 +84,10 @@ public class PathFinderFactory implements Serializable {
 
     public GeoPoint getDestinationLatLng() {
         return destinationLatLng;
+    }
+
+    public static String getWebServiceApi() {
+        return WEB_SERVICE_API;
     }
 
 

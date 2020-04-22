@@ -15,7 +15,7 @@ import java.util.concurrent.ExecutionException;
 
 public class OnlinePathFinder extends AbstractPathFinder {
     private String TAG = OnlinePathFinder.class.getName();
-    OnlinePathFinder(GeoPoint origin, GeoPoint destination, String url,int travelChoice) {
+    public OnlinePathFinder(GeoPoint origin, GeoPoint destination, String url, int travelChoice) {
         super(origin, destination, url,travelChoice);
     }
 
@@ -37,11 +37,10 @@ public class OnlinePathFinder extends AbstractPathFinder {
         Map<String, List<String>> modes = new HashMap<>();
         Map<String, AbstractDirectionsObject.TravelMode> availableModes = new HashMap<>();
         try {
-            String res = requestMaker.execute(createURl()).get();
             Log.i(TAG,"Sending request to " + createURl());
+            String res = requestMaker.execute(createURl()).get();
             ObjectMapper objectMapper = new ObjectMapper();
             Map<String,Object> jsonMap =  objectMapper.readValue(res,Map.class);
-
             for (String key:jsonMap.keySet()){
                 Map<String,Object> tempMap = (Map<String, Object>) jsonMap.get(key);
                 for (String subKey: tempMap.keySet()){
@@ -57,6 +56,7 @@ public class OnlinePathFinder extends AbstractPathFinder {
             object.setModes(modes);
             object.setEndPoint(getDestination());
             object.setStartPoint(getOrigin());
+            object.setTravelChoice(getTravelChoice());
         } catch (ExecutionException | InterruptedException | IOException e) {
             e.printStackTrace();
         }

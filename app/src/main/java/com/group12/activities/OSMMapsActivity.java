@@ -17,23 +17,23 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.GestureDetector;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import androidx.core.app.ActivityCompat;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.group12.p2p.WifiDirectService;
 import com.group12.pathfinder.AbstractDirectionsObject;
+import com.group12.pathfinder.AbstractPathFinder;
+import com.group12.pathfinder.OnlinePathFinder;
 import com.group12.pathfinder.PathFinderFactory;
 import com.group12.utils.PermissionChecker;
+import com.group12.utils.RequestMaker;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.events.MapEventsReceiver;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
-import org.osmdroid.views.Projection;
 import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polyline;
@@ -43,7 +43,6 @@ import java.util.*;
 
 public class OSMMapsActivity extends Activity implements LocationListener {
     public static final String TAG = "OSMMapsActivity";
-    private FloatingActionButton locationButton;
     private FloatingActionButton searchButton;
     MapView map = null;
     public LocationManager locationManager;
@@ -53,6 +52,8 @@ public class OSMMapsActivity extends Activity implements LocationListener {
     private PathFinderFactory pathFinderFactory = new PathFinderFactory();
     boolean isBound = false;
     private boolean centreMap = true;
+    private AbstractDirectionsObject response;
+
     private ServiceConnection myConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
@@ -83,10 +84,10 @@ public class OSMMapsActivity extends Activity implements LocationListener {
         Context ctx = getApplicationContext();
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
         setContentView(R.layout.activity_osm_maps);
-        locationButton = findViewById(R.id.location_button);
+        FloatingActionButton locationButton = findViewById(R.id.location_button);
         searchButton = findViewById(R.id.search_button);
         final FloatingActionButton p2pButton = findViewById(R.id.p2p);
-        map = (MapView) findViewById(R.id.map);
+        map = findViewById(R.id.map);
         map.setTileSource(TileSourceFactory.MAPNIK);
         mapController = map.getController();
         mapController.setZoom(9.5);
@@ -119,12 +120,13 @@ public class OSMMapsActivity extends Activity implements LocationListener {
         //Refreshing the map to draw the new overlay
         map.invalidate();
 
-        AbstractDirectionsObject response = (AbstractDirectionsObject) getIntent().getSerializableExtra("Response");
+        response = (AbstractDirectionsObject) getIntent().getSerializableExtra("Response");
         if (response != null){
-            Map<String, List<Polyline>> lines = addPolyline(response);
+            Map<String, List<Polyline>> lines = getPolylines(response);
             for (Map.Entry<String,List<Polyline>> entry:lines.entrySet()){
 //                    line.getOutlinePaint().setColor(getColor(entry.getKey()));
                     map.getOverlays().addAll(entry.getValue());
+
             }
             GeoPoint origin = response.getStartPoint();
             GeoPoint destination = response.getEndPoint();
@@ -154,7 +156,7 @@ public class OSMMapsActivity extends Activity implements LocationListener {
         searchButton.setOnClickListener(new OnClickListener() {
                                             @Override
                                             public void onClick(View view) {
-                                                getLocation();
+                                                //getLocation();
                                                 Intent intent = new Intent(OSMMapsActivity.this,SearchActivity.class);
                                                 intent.putExtra(PathFinderFactory.class.getName(),pathFinderFactory);
                                                 startActivity(intent);
@@ -184,24 +186,11 @@ public class OSMMapsActivity extends Activity implements LocationListener {
         locationManager.removeUpdates(this);
     }
 
-    final GestureDetector gd = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
-        @Override
-        public void onLongPress(MotionEvent e) {
-            Projection project = map.getProjection();
-            GeoPoint loc = (GeoPoint) project.fromPixels((int) e.getX(), (int) e.getY());
-            String longitude = Double.toString(loc.getLongitude());
-            String latitude = Double.toString(loc.getLatitude());
-            Log.d(TAG, "Gesture Longitude: " + longitude + " Latitude: " + latitude);
-        }
-    });
-
-
     protected void getLocation() {
         Log.d(TAG, "Getting Location");
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         setLocationUpdates();
     }
-
 
     public void setLocationUpdates(){
         int minTime;
@@ -210,7 +199,7 @@ public class OSMMapsActivity extends Activity implements LocationListener {
             minTime = 0;
             minDistance = 0;
         } else{
-            minTime = 30000;
+            minTime = 60000;
             minDistance = 100;
         }
 
@@ -232,8 +221,25 @@ public class OSMMapsActivity extends Activity implements LocationListener {
         if (centreMap) {
             mapController.setCenter(current_position);
             centreMap = false;
-            setLocationUpdates();
+            Marker startMarker = new Marker(map);
+            startMarker.setTextIcon("start: " + current_position.toDoubleString());
+            startMarker.setPosition(current_position);
+            startMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+            map.getOverlays().add(startMarker);
+            map.invalidate();
+            //setLocationUpdates();
         }
+        if (response != null) {
+            AbstractPathFinder pathFinder = new OnlinePathFinder(current_position, response.getEndPoint(), PathFinderFactory.getWebServiceApi(), response.getTravelChoice());
+            removePolyLines();
+            updateRoutes(pathFinder);
+            Map<String, List<Polyline>> lines = getPolylines(response);
+            for (Map.Entry<String,List<Polyline>> entry:lines.entrySet()){
+                map.getOverlays().addAll(entry.getValue());
+            }
+            map.invalidate();
+        }
+        setLocationUpdates();
         pathFinderFactory.setOriginLatLng(current_position);
         Log.d(TAG, "latitude:" + location.getLatitude() + " longitude:" + location.getLongitude());
     }
@@ -258,7 +264,7 @@ public class OSMMapsActivity extends Activity implements LocationListener {
         getLocation();
     }
 
-    private Map<String,List<Polyline>> addPolyline(AbstractDirectionsObject object){
+    private Map<String,List<Polyline>> getPolylines(AbstractDirectionsObject object){
         Map<String, List<Polyline>> res = new HashMap();
         Set<String> availableRoutes = object.getAvailableRoutes();
         for (String route:availableRoutes){
@@ -293,6 +299,22 @@ public class OSMMapsActivity extends Activity implements LocationListener {
                 return getResources().getColor(R.color.polylinecolor_bus);
             default:
                 return getResources().getColor(R.color.polylinecolor_luas);
+        }
+    }
+
+    private void updateRoutes(final AbstractPathFinder pathFinder){
+        Log.i(TAG,"Updating routes");
+        response = pathFinder.makeRequest(new RequestMaker());
+        Log.i(TAG,response.toString());
+    }
+
+    private void removePolyLines(){
+        Map<String, List<Polyline>> lines = getPolylines(response);
+        for (String key : lines.keySet()){
+            List<Polyline> line = lines.get(key);
+            for (Polyline l: line){
+                map.getOverlays().remove(l);
+            }
         }
     }
 }
