@@ -22,7 +22,6 @@ public class PathSettingActivity extends AppCompatActivity {
         settingButton.setOnClickListener(new View.OnClickListener() {
                                              @Override
                                              public void onClick(View view) {
-                                                 //TODO: double check if the case number is correct
                                                  int radioId = radioGroup.getCheckedRadioButtonId();
                                                  if (radioId == -1) {
                                                      factory.setTravelChoice(1);
