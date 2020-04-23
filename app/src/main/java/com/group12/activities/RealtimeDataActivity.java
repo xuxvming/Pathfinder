@@ -8,6 +8,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Environment;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -22,10 +23,14 @@ import com.mancj.materialsearchbar.MaterialSearchBar;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 
@@ -37,6 +42,7 @@ public class RealtimeDataActivity extends AppCompatActivity implements MaterialS
     private ArrayList<String[]> busData;
     private ArrayList<String[]> luasData;
     private MaterialSearchBar searchBar;
+    private String RTPIFILE = "rtpidata";
 
 
     @Override
@@ -73,6 +79,7 @@ public class RealtimeDataActivity extends AppCompatActivity implements MaterialS
         if (!updateRTPIData()){
             // No internet connection
         }
+
     }
 
     @Override
@@ -88,6 +95,13 @@ public class RealtimeDataActivity extends AppCompatActivity implements MaterialS
             case R.id.p2p_update:
                 // Do nothing for now
 
+                if(readDataFromFile()){
+                    hasData = true;
+
+                    searchBar.setPlaceHolder("Enter a stop Id");
+                    searchBar.setEnabled(true);
+
+                }
 
                 return true;
 
@@ -124,6 +138,7 @@ public class RealtimeDataActivity extends AppCompatActivity implements MaterialS
                     luasData = makeCSV("luas");
                     busData = makeCSV("bus");
 
+                    writeFile(RTPIFILE , dataToString(railData,luasData,busData));
                     Log.d("RTPI ACTIVITY", "updated rtpi");
 
                     RealtimeDataActivity.this.runOnUiThread(new Runnable() {
@@ -236,7 +251,6 @@ public class RealtimeDataActivity extends AppCompatActivity implements MaterialS
     }
 
     public ArrayList<String[]> makeCSV(final String urlHost){
-        final ArrayList<String> urls = new ArrayList<>();
         final ArrayList<String[]> listStringArray = new ArrayList<>();
         try {
             // Create a URL for the desired page
@@ -249,7 +263,6 @@ public class RealtimeDataActivity extends AppCompatActivity implements MaterialS
             String[] stringArray;
 
             while ((str = in.readLine()) != null) {
-                urls.add(str);
                 stringArray = str.split(",");
                 listStringArray.add(stringArray);
             }
@@ -257,35 +270,109 @@ public class RealtimeDataActivity extends AppCompatActivity implements MaterialS
         } catch (Exception e) {
             Log.d("Thread CSV", e.toString());
         }
-        //since we are in background thread, to post results we have to go back to ui thread. do the following for that
-        RealtimeDataActivity.this.runOnUiThread(new Runnable() {
-            public void run() {
-                writeCSV(urls, urlHost);
-            }
-        });
         return listStringArray;
     }
 
-    public static void writeCSV(ArrayList<String> urls, String urlHost){
-        String filename = urlHost + ".csv";
-        File directoryDownload = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        File logDir = new File(directoryDownload, "androidMaps"); //Creates a new folder in DOWNLOAD directory
-        logDir.mkdirs();
-        File file = new File(logDir, filename);
-        if(file.exists())
-            file.delete();
-        FileOutputStream outputStream;
-        try {
-            outputStream = new FileOutputStream(file, true);
-            for (int i = 0; i < urls.size(); i += 3) {
-                outputStream.write((urls.get(i)+ "\n").getBytes());
-            }
-            outputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+    private String dataToString(ArrayList<String[]> rail, ArrayList<String[]> luas, ArrayList<String[]> bus){
+        String[] tempAA = new String[ rail.size() ];
+        String[] tempBB = new String[ luas.size() ];
+        String[] tempCC = new String[ bus.size() ];
+
+        String tempa,tempb,tempc;
+
+        for (int i = 0; i< rail.size(); i ++){
+            tempAA[i] = (TextUtils.join(",",rail.get(i)));
         }
+        tempa = TextUtils.join("%%", tempAA);
+
+        for (int i = 0; i< luas.size(); i ++){
+            tempBB[i] = (TextUtils.join(",",luas.get(i)));
+        }
+        tempb = TextUtils.join("%%", tempBB);
+
+        for (int i = 0; i< bus.size(); i ++){
+            tempCC[i] = (TextUtils.join(",",bus.get(i)));
+        }
+        tempc = TextUtils.join("%%", tempCC);
+
+        return  tempa + "!!!" + tempb + "!!!" + tempc;
+
+    }
+    private boolean writeFile(String filename, String contents){
+
+        try (FileOutputStream fos = getApplicationContext().openFileOutput(filename, Context.MODE_PRIVATE)) {
+            fos.write(contents.getBytes());
+        } catch (FileNotFoundException e) {
+            Log.d("RTPI" , "Write file FileNotFoundException: " + e);
+            return false;
+        } catch (IOException e) {
+            Log.d("RTPI" , "Write file IOException: " + e);
+            return false;
+        }
+        return true;
     }
 
+    private boolean readDataFromFile(){
+        String result = readFile(RTPIFILE);
+        if (result == null) {
+            return false;
+        }
+        String[] strs = result.split("!!!");
+
+        String[] rail = strs[0].split("%%");
+        String[] luas = strs[1].split("%%");
+        String[] bus = strs[2].split("%%");
+
+        railData = new ArrayList<>();
+        luasData = new ArrayList<>();
+        busData = new ArrayList<>();
+
+        for (int i = 0; i< rail.length; i ++){
+            System.out.println(rail[i]);
+            railData.add(rail[i].split(","));
+        }
+
+        for (int i = 0; i< luas.length; i ++){
+            System.out.println(luas[i]);
+            luasData.add(luas[i].split(","));
+        }
+
+        for (int i = 0; i< bus.length; i ++){
+            System.out.println(bus[i]);
+            busData.add(bus[i].split(","));
+        }
+
+
+        return true;
+    }
+
+    private String readFile(String filename){
+        String contents;
+        StringBuilder stringBuilder = new StringBuilder();
+        try (FileInputStream fis = getApplicationContext().openFileInput(filename)){
+            InputStreamReader inputStreamReader =
+                    new InputStreamReader(fis, StandardCharsets.UTF_8);
+
+            BufferedReader reader = new BufferedReader(inputStreamReader);
+            String line = reader.readLine();
+            while (line != null) {
+                stringBuilder.append(line).append('\n');
+                line = reader.readLine();
+            }
+        }
+        catch (FileNotFoundException e) {
+            Log.d("RTPI", "Write file FileNotFoundException: " + e);
+            return null;
+        } catch (IOException e) {
+            Log.d("RTPI", "Write file IOException: " + e);
+            return null;
+        }
+        finally {
+            contents = stringBuilder.toString();
+        }
+
+        return contents;
+    }
     private static boolean hasPermissions(Context context, String... permissions) {
         if (context != null && permissions != null) {
             for (String permission : permissions) {
