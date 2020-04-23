@@ -2,14 +2,23 @@
 <menu
     xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:android="http://schemas.android.com/apk/res/android">
     <item
+        android:id="@+id/debug_delete_file"
+        android:title="Debug_Delete_File"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/file_update"
+        android:icon="@drawable/file"
+        android:title="@string/file_update_button"
+        app:showAsAction="always"/>
+    <item
         android:id="@+id/p2p_update"
         android:icon="@drawable/wifi_direct"
         android:title="@string/p2p_update_button"
-        app:showAsAction="ifRoom|withText"/>
+        app:showAsAction="always"/>
     <item
         android:id="@+id/network_update"
         android:icon="@drawable/refresh"
         android:title="@string/network_update_button"
-        app:showAsAction="ifRoom|withText"/>
+        app:showAsAction="always"/>
 
 </menu>

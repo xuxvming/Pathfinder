@@ -5,6 +5,7 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.util.Log;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,6 +25,7 @@ public class FileTransferService extends IntentService {
     public static final String ACTION_SEND_FILE = "com.group12.p2p.SEND_FILE";
     public static final String EXTRAS_GROUP_OWNER_ADDRESS = "go_host";
     public static final String EXTRAS_GROUP_OWNER_PORT = "go_port";
+    private String RTPIFILE = "rtpidata";
 
     public FileTransferService(String name) {
         super(name);
@@ -54,14 +56,15 @@ public class FileTransferService extends IntentService {
 
                 Log.d(WifiDirectService.TAG, "Client socket - " + socket.isConnected());
                 OutputStream stream = socket.getOutputStream();
-                InputStream is = null;
-                try {
-                    is = getAssets().open("test.txt");
+                try (FileInputStream fis = getApplicationContext().openFileInput(RTPIFILE)){
+                    copyFile(fis, stream);
+                    Log.d(WifiDirectService.TAG, "Client: Data written");
+
                 } catch (FileNotFoundException e) {
                     Log.d(WifiDirectService.TAG, e.toString());
                 }
-                copyFile(is, stream);
-                Log.d(WifiDirectService.TAG, "Client: Data written");
+
+
             } catch (IOException e) {
                 Log.e(WifiDirectService.TAG, e.getMessage());
             } finally {

@@ -19,6 +19,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
+import com.group12.p2p.WifiDirectService;
 import com.mancj.materialsearchbar.MaterialSearchBar;
 
 import java.io.BufferedReader;
@@ -43,6 +45,9 @@ public class RealtimeDataActivity extends AppCompatActivity implements MaterialS
     private ArrayList<String[]> luasData;
     private MaterialSearchBar searchBar;
     private String RTPIFILE = "rtpidata";
+
+
+    private WifiDirectService wifiDirectService;
 
 
     @Override
@@ -76,9 +81,16 @@ public class RealtimeDataActivity extends AppCompatActivity implements MaterialS
             }
         }  // Permission has already been granted
 
-        if (!updateRTPIData()){
-            // No internet connection
-        }
+        wifiDirectService = OSMMapsActivity.getWifiDirectService();
+        Log.d("RTPI ", wifiDirectService.TAG );
+
+
+//        if (!updateRTPIData()){
+//            // No internet connection
+//        }
+        hasData = false;
+        searchBar.setPlaceHolder("No Data");
+        searchBar.setEnabled(false);
 
     }
 
@@ -92,8 +104,12 @@ public class RealtimeDataActivity extends AppCompatActivity implements MaterialS
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.p2p_update:
-                // Do nothing for now
+            case R.id.debug_delete_file:
+                mContext.deleteFile(RTPIFILE);
+
+                return true;
+
+            case R.id.file_update:
 
                 if(readDataFromFile()){
                     hasData = true;
@@ -102,6 +118,19 @@ public class RealtimeDataActivity extends AppCompatActivity implements MaterialS
                     searchBar.setEnabled(true);
 
                 }
+                else {
+                    Toast.makeText(mContext, "No file Saved", Toast.LENGTH_LONG).show();
+                }
+                return true;
+
+            case R.id.p2p_update:
+                // Do nothing for now
+
+                wifiDirectService.isSearching = true;
+                wifiDirectService.startDiscovery();
+
+                Toast.makeText(mContext, "Searching for p2p connections", Toast.LENGTH_LONG).show();
+
 
                 return true;
 
@@ -162,7 +191,7 @@ public class RealtimeDataActivity extends AppCompatActivity implements MaterialS
             searchBar.setPlaceHolder("No Data");
             searchBar.setEnabled(false);
 
-            Toast.makeText(getApplicationContext(), "Not Connected Could not Update RTPI", Toast.LENGTH_SHORT).show();
+            Toast.makeText(mContext, "Not Connected Could not Update RTPI", Toast.LENGTH_SHORT).show();
             return false;
         }
 
@@ -189,7 +218,7 @@ public class RealtimeDataActivity extends AppCompatActivity implements MaterialS
     public void onSearchConfirmed(CharSequence text) {
 
         if (!hasData) {
-            Toast.makeText(getApplicationContext(), "No RTPI data available", Toast.LENGTH_SHORT).show();
+            Toast.makeText(mContext, "No RTPI data available", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -300,7 +329,7 @@ public class RealtimeDataActivity extends AppCompatActivity implements MaterialS
     }
     private boolean writeFile(String filename, String contents){
 
-        try (FileOutputStream fos = getApplicationContext().openFileOutput(filename, Context.MODE_PRIVATE)) {
+        try (FileOutputStream fos = mContext.openFileOutput(filename, Context.MODE_PRIVATE)) {
             fos.write(contents.getBytes());
         } catch (FileNotFoundException e) {
             Log.d("RTPI" , "Write file FileNotFoundException: " + e);
@@ -349,7 +378,7 @@ public class RealtimeDataActivity extends AppCompatActivity implements MaterialS
     private String readFile(String filename){
         String contents;
         StringBuilder stringBuilder = new StringBuilder();
-        try (FileInputStream fis = getApplicationContext().openFileInput(filename)){
+        try (FileInputStream fis = mContext.openFileInput(filename)){
             InputStreamReader inputStreamReader =
                     new InputStreamReader(fis, StandardCharsets.UTF_8);
 

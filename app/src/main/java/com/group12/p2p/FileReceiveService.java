@@ -30,6 +30,7 @@ public class FileReceiveService extends IntentService {
     public FileReceiveService() {
         super("FileServerAsyncTask");
     }
+    private String RTPIFILE = "rtpidata";
 
 
     @Override
@@ -40,26 +41,23 @@ public class FileReceiveService extends IntentService {
             Log.d(WifiDirectService.TAG, "Server: Socket opened");
             Socket client = serverSocket.accept();
             Log.d(WifiDirectService.TAG, "Server: connection done");
-            final File f = new File(context.getExternalFilesDir("received"), "received.txt");
 
-            File dirs = new File(f.getParent());
-            if (!dirs.exists())
-                dirs.mkdirs();
-            f.createNewFile();
 
-            Log.d(WifiDirectService.TAG, "server: copying files " + f.toString());
-            InputStream inputstream = client.getInputStream();
+            try (FileOutputStream fos = getApplicationContext().openFileOutput(RTPIFILE, Context.MODE_PRIVATE)) {
+                Log.d(WifiDirectService.TAG, "server: copying files !!!!!!!!!!!!!!!!!!!!!!!");
+                InputStream inputstream = client.getInputStream();
+                copyFile(inputstream, fos);
+                serverSocket.close();
 
-            //Here we need to check the first few bytes from the inpute stream
-            //we should make these be a timestamp so that we can compare this new inputstream with
-            //the rtpi file that we alread have
-
-            copyFile(inputstream, new FileOutputStream(f));
-            serverSocket.close();
-
+            } catch (FileNotFoundException e) {
+                Log.d(WifiDirectService.TAG , "Write file FileNotFoundException: " + e);
+            }
         } catch (IOException e) {
             Log.e(WifiDirectService.TAG, e.getMessage());
         }
+
+        // Success, callback
+
     }
 
 

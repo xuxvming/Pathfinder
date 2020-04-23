@@ -49,7 +49,7 @@ public class OSMMapsActivity extends Activity implements LocationListener {
     public LocationManager locationManager;
     private static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
     private IMapController mapController;
-    private WifiDirectService wifiDirectService;
+    private static WifiDirectService wifiDirectService;
     private PathFinderFactory pathFinderFactory = new PathFinderFactory();
     boolean isBound = false;
     private boolean centreMap = true;
@@ -196,6 +196,9 @@ public class OSMMapsActivity extends Activity implements LocationListener {
         }
     });
 
+    public static WifiDirectService getWifiDirectService() {
+        return wifiDirectService;
+    }
 
     protected void getLocation() {
         Log.d(TAG, "Getting Location");
