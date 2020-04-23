@@ -9,6 +9,9 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -30,13 +33,11 @@ public class RealtimeDataActivity extends AppCompatActivity implements MaterialS
     private Context mContext = RealtimeDataActivity.this;
     private static final int REQUEST = 112;
     private boolean hasData;
-    private ArrayList<String[]> railUrls;
-    private ArrayList<String[]> busUrls;
-    private ArrayList<String[]> luasUrls;
+    private ArrayList<String[]> railData;
+    private ArrayList<String[]> busData;
+    private ArrayList<String[]> luasData;
     private MaterialSearchBar searchBar;
-    private ArrayList<String> Route;
-    private ArrayList<String> Due;
-    private ArrayList<String> Destination;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,9 +45,7 @@ public class RealtimeDataActivity extends AppCompatActivity implements MaterialS
         setContentView(R.layout.activity_realtime_data);
         searchBar = findViewById(R.id.stop_search_bar);
         searchBar.setOnSearchActionListener(this);
-        Route = new ArrayList<>();
-        Due = new ArrayList<>();
-        Destination = new ArrayList<>();
+
         String[] PERMISSIONS = {android.Manifest.permission.WRITE_EXTERNAL_STORAGE};
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -71,30 +70,87 @@ public class RealtimeDataActivity extends AppCompatActivity implements MaterialS
             }
         }  // Permission has already been granted
 
-        if (isNetworkConnected()){
-
-            updateRTPIData();
+        if (!updateRTPIData()){
+            // No internet connection
         }
-        else {
-            hasData = false;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.rtpi_action_items, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.p2p_update:
+                // Do nothing for now
+
+
+                return true;
+
+            case R.id.network_update:
+
+                updateRTPIData();
+
+
+                // User chose the "Favorite" action, mark the current item
+                // as a favorite...
+                return true;
+
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+
         }
     }
 
 
-    private void updateRTPIData(){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                railUrls = makeCSV("rail");
-                luasUrls = makeCSV("luas");
-                busUrls = makeCSV("bus");
 
-                Log.d("RTPI ACTIVITY", "updated rtpi");
+    private boolean updateRTPIData(){
 
-                hasData = true;
+        if (isNetworkConnected()){
 
-            }
-        }).start();
+            new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+
+
+                    railData = makeCSV("rail");
+                    luasData = makeCSV("luas");
+                    busData = makeCSV("bus");
+
+                    Log.d("RTPI ACTIVITY", "updated rtpi");
+
+                    RealtimeDataActivity.this.runOnUiThread(new Runnable() {
+                        public void run() {
+                            hasData = true;
+
+                            searchBar.setPlaceHolder("Enter a stop Id");
+                            searchBar.setEnabled(true);
+
+                        }
+                    });
+                }
+            }).start();
+
+            searchBar.setPlaceHolder("Updating...");
+            searchBar.setEnabled(false);
+            return true; // Was able so send update request
+        }
+        else {
+            hasData = false;
+            searchBar.setPlaceHolder("No Data");
+            searchBar.setEnabled(false);
+
+            Toast.makeText(getApplicationContext(), "Not Connected Could not Update RTPI", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
     }
 
     private boolean isNetworkConnected() {
@@ -133,24 +189,24 @@ public class RealtimeDataActivity extends AppCompatActivity implements MaterialS
         tvR.append("Route\n");
         tvD.append("Due\n");
         tvDst.append("Destination\n");
-        for (int i = 0; i < busUrls.size(); i++) {
-            tempB = busUrls.get(i);
+        for (int i = 0; i < busData.size(); i++) {
+            tempB = busData.get(i);
             if (tempB[18].equals(stop)) {
                 tvR.append("\n" + tempB[15]);
                 tvD.append("\n" + tempB[1]);
                 tvDst.append("\n" + tempB[6]);
             }
         }
-        for (int i = 0; i < luasUrls.size(); i++) {
-            tempL = luasUrls.get(i);
+        for (int i = 0; i < luasData.size(); i++) {
+            tempL = luasData.get(i);
             if (tempL[18].equals(stop)) {
                 tvR.append("\n" + tempL[15]);
                 tvDst.append("\n" + tempL[6]);
                 tvD.append("\n" + tempL[1]);
             }
         }
-        for (int i = 0; i < railUrls.size(); i++) {
-            tempR = railUrls.get(i);
+        for (int i = 0; i < railData.size(); i++) {
+            tempR = railData.get(i);
             if (tempR[18].equals(stop)) {
                 tvR.append("\n" + tempR[15]);
                 tvDst.append("\n" + tempR[6]);
