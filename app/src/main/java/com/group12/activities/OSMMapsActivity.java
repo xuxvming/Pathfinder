@@ -247,7 +247,6 @@ public class OSMMapsActivity extends Activity implements LocationListener {
             startMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
             map.getOverlays().add(startMarker);
             map.invalidate();
-            //setLocationUpdates();
         }
         else if (response != null) {
             ConnectivityManager manager = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -364,7 +363,7 @@ public class OSMMapsActivity extends Activity implements LocationListener {
                 current_available_modes = result;
                 return;
             }
-            if (result.equals(current_available_modes)){
+            if (!result.equals(current_available_modes)){
                 spinner.setVisibility(View.VISIBLE);
                 current_available_modes = result;
                 removePolyLines();
