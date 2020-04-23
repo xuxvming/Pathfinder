@@ -31,7 +31,7 @@
 
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/p2p"
+        android:id="@+id/realtime_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
@@ -41,7 +41,7 @@
         android:layout_marginBottom="221dp"
         android:clickable="true"
         android:focusable="true"
-        android:src="@drawable/ic_wifi_tethering"/>
+        android:src="@drawable/clock"/>
 
     <TextView
         android:layout_width="wrap_content"

@@ -63,14 +63,7 @@ public class SearchActivity extends AppCompatActivity implements MaterialSearchB
                                              }
                                          }
         );
-        realtimeButton.setOnClickListener(new View.OnClickListener() {
-                                              @Override
-                                              public void onClick(View view) {
-                                                  Intent intent = new Intent(SearchActivity.this,RealtimeDataActivity.class);
-                                                  startActivity(intent);
-                                              }
-                                          }
-        );
+
     }
 
 

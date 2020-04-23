@@ -85,7 +85,7 @@ public class OSMMapsActivity extends Activity implements LocationListener {
         setContentView(R.layout.activity_osm_maps);
         locationButton = findViewById(R.id.location_button);
         searchButton = findViewById(R.id.search_button);
-        final FloatingActionButton p2pButton = findViewById(R.id.p2p);
+        final FloatingActionButton realtime_button = findViewById(R.id.realtime_button);
         map = (MapView) findViewById(R.id.map);
         map.setTileSource(TileSourceFactory.MAPNIK);
         mapController = map.getController();
@@ -143,13 +143,14 @@ public class OSMMapsActivity extends Activity implements LocationListener {
         Intent intent = new Intent(this, WifiDirectService.class);
         bindService(intent, myConnection, Context.BIND_AUTO_CREATE);
 
-        p2pButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                wifiDirectService.isSearching = true;
-                wifiDirectService.startDiscovery();
-            }
-        });
+        realtime_button.setOnClickListener(new View.OnClickListener() {
+                                              @Override
+                                              public void onClick(View view) {
+                                                  Intent intent = new Intent(OSMMapsActivity.this,RealtimeDataActivity.class);
+                                                  startActivity(intent);
+                                              }
+                                          }
+        );
 
         searchButton.setOnClickListener(new OnClickListener() {
                                             @Override
