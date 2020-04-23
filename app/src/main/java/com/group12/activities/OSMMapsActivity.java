@@ -13,12 +13,15 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.wifi.p2p.WifiP2pManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.ProgressBar;
+
 import androidx.core.app.ActivityCompat;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.group12.p2p.WifiDirectService;
@@ -37,14 +40,26 @@ import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polyline;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 
 public class OSMMapsActivity extends Activity implements LocationListener {
     public static final String TAG = "OSMMapsActivity";
     private FloatingActionButton searchButton;
+    private ProgressBar spinner;
     MapView map = null;
+    GeoPoint current_position;
+    String current_available_modes;
     public LocationManager locationManager;
     private static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
     private IMapController mapController;
@@ -53,6 +68,7 @@ public class OSMMapsActivity extends Activity implements LocationListener {
     boolean isBound = false;
     private boolean centreMap = true;
     private AbstractDirectionsObject response;
+    private MapEventsOverlay OverlayGesture;
 
     private ServiceConnection myConnection = new ServiceConnection() {
         @Override
@@ -84,6 +100,8 @@ public class OSMMapsActivity extends Activity implements LocationListener {
         Context ctx = getApplicationContext();
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
         setContentView(R.layout.activity_osm_maps);
+        spinner = (ProgressBar)findViewById(R.id.progressBar1);
+        spinner.setVisibility(View.GONE);
         FloatingActionButton locationButton = findViewById(R.id.location_button);
         searchButton = findViewById(R.id.search_button);
         final FloatingActionButton p2pButton = findViewById(R.id.p2p);
@@ -114,19 +132,18 @@ public class OSMMapsActivity extends Activity implements LocationListener {
 
         };
         //Creating a handle overlay to capture the gestures
-        MapEventsOverlay OverlayEventos = new MapEventsOverlay(getBaseContext(), mReceive);
-        map.getOverlays().add(OverlayEventos);
+        OverlayGesture = new MapEventsOverlay(getBaseContext(), mReceive);
+        map.getOverlays().add(OverlayGesture);
 
         //Refreshing the map to draw the new overlay
         map.invalidate();
-
+        getLocation();
         response = (AbstractDirectionsObject) getIntent().getSerializableExtra("Response");
         if (response != null){
             Map<String, List<Polyline>> lines = getPolylines(response);
             for (Map.Entry<String,List<Polyline>> entry:lines.entrySet()){
 //                    line.getOutlinePaint().setColor(getColor(entry.getKey()));
                     map.getOverlays().addAll(entry.getValue());
-
             }
             GeoPoint origin = response.getStartPoint();
             GeoPoint destination = response.getEndPoint();
@@ -172,12 +189,13 @@ public class OSMMapsActivity extends Activity implements LocationListener {
             }
 
         });
-        getLocation();
+
     }
 
     public void onResume() {
         super.onResume();
         map.onResume();
+        setLocationUpdates();
     }
 
     public void onPause() {
@@ -217,7 +235,7 @@ public class OSMMapsActivity extends Activity implements LocationListener {
 
 
     public void onLocationChanged(Location location) {
-        GeoPoint current_position = new GeoPoint(location.getLatitude(), location.getLongitude());
+        current_position = new GeoPoint(location.getLatitude(), location.getLongitude());
         if (centreMap) {
             mapController.setCenter(current_position);
             centreMap = false;
@@ -229,15 +247,8 @@ public class OSMMapsActivity extends Activity implements LocationListener {
             map.invalidate();
             //setLocationUpdates();
         }
-        if (response != null) {
-            AbstractPathFinder pathFinder = new OnlinePathFinder(current_position, response.getEndPoint(), PathFinderFactory.getWebServiceApi(), response.getTravelChoice());
-            removePolyLines();
-            updateRoutes(pathFinder);
-            Map<String, List<Polyline>> lines = getPolylines(response);
-            for (Map.Entry<String,List<Polyline>> entry:lines.entrySet()){
-                map.getOverlays().addAll(entry.getValue());
-            }
-            map.invalidate();
+        else if (response != null) {
+            checkForTransportUpdates();
         }
         setLocationUpdates();
         pathFinderFactory.setOriginLatLng(current_position);
@@ -302,18 +313,65 @@ public class OSMMapsActivity extends Activity implements LocationListener {
         }
     }
 
-    private void updateRoutes(final AbstractPathFinder pathFinder){
-        Log.i(TAG,"Updating routes");
-        response = pathFinder.makeRequest(new RequestMaker());
-        Log.i(TAG,response.toString());
+    private void checkForTransportUpdates() {
+        Log.i(TAG,"Checking for Transport Status Updates");
+        HttpGetRequest getRequest = new HttpGetRequest();
+        getRequest.execute();
+
     }
 
     private void removePolyLines(){
-        Map<String, List<Polyline>> lines = getPolylines(response);
-        for (String key : lines.keySet()){
-            List<Polyline> line = lines.get(key);
-            for (Polyline l: line){
-                map.getOverlays().remove(l);
+        map.getOverlays().clear();
+        map.getOverlays().add(OverlayGesture);
+    }
+    public class HttpGetRequest extends AsyncTask<AbstractPathFinder, Void, String> {
+        private final Logger LOGGER = LoggerFactory.getLogger(OSMMapsActivity.class);
+        private String requestMethod = "GET";
+        @Override
+        protected String doInBackground(final AbstractPathFinder... params){
+
+            try{
+                URL url = new URL("http://35.202.105.121/status");
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod(requestMethod);
+                InputStream inputStream = connection.getInputStream();
+                StringBuilder sb = new StringBuilder();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                String line;
+                while ((line = reader.readLine()) !=null){
+                    sb.append(line);
+                }
+                return sb.toString();
+            } catch (IOException e) {
+                LOGGER.error("Error making request" ,e );
+            }
+            return null;
+
+        }
+        @Override
+        protected void onPostExecute(String result){
+            Log.i(TAG,"PostExecute Activated");
+            if (result == null && result.isEmpty()){
+                return;
+            }
+            if (current_available_modes == null){
+                current_available_modes = result;
+                return;
+            }
+            if (result.equals(current_available_modes)){
+                spinner.setVisibility(View.VISIBLE);
+                current_available_modes = result;
+                removePolyLines();
+                Log.i(TAG,"Change detected");
+                AbstractPathFinder pathFinder = new OnlinePathFinder(current_position, response.getEndPoint(), PathFinderFactory.getWebServiceApi(), response.getTravelChoice());
+                response = pathFinder.makeRequest(new RequestMaker());
+
+                Map<String, List<Polyline>> lines = getPolylines(response);
+                for (Map.Entry<String,List<Polyline>> entry:lines.entrySet()){
+                    map.getOverlays().addAll(entry.getValue());
+                }
+                map.invalidate();
+                spinner.setVisibility(View.GONE);
             }
         }
     }

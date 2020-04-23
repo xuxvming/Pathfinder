@@ -82,5 +82,13 @@
         android:layout_marginRight="25dp"
         android:layout_marginBottom="620dp"
         android:text="Walk"
-        android:textColor="#005500"/>
+        android:textColor="#7fda80"/>
+
+    <ProgressBar
+        android:id="@+id/progressBar1"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true" />
+
 </RelativeLayout>
