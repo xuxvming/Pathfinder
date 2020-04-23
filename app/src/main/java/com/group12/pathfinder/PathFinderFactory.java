@@ -23,13 +23,13 @@ public class PathFinderFactory implements Serializable {
 
 
     private GeoPoint destinationLatLng;
-    private String srouce = "Server";
+    private String source = "Server";
     private String graph_location;
     private int travelChoice = 0;
     private String searchText = "";
 
     public AbstractPathFinder getPathFinder(){
-        if (srouce.equals("Local")){
+        if (source.equals("Local")){
             return new LocalPathFinder(originLatLng,destinationLatLng,"",graph_location,travelChoice);
         }
         else {
@@ -38,12 +38,12 @@ public class PathFinderFactory implements Serializable {
     }
 
 
-    public String getMode() {
-        return srouce;
+    public String getSource() {
+        return source;
     }
 
     public void setSource(String mode) {
-        this.srouce = mode;
+        this.source = mode;
     }
 
     public Context getContext() {

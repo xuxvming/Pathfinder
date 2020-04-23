@@ -12,6 +12,8 @@ import android.graphics.Paint;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -248,7 +250,11 @@ public class OSMMapsActivity extends Activity implements LocationListener {
             //setLocationUpdates();
         }
         else if (response != null) {
-            checkForTransportUpdates();
+            ConnectivityManager manager = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo activeNetwork = manager.getActiveNetworkInfo();
+            if (activeNetwork.isConnected()) {
+                checkForTransportUpdates();
+            }
         }
         setLocationUpdates();
         pathFinderFactory.setOriginLatLng(current_position);
