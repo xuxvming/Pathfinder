@@ -299,6 +299,7 @@ def check_if_its_short_path(start, end, G):
         walk_path = shortest_path(G, sources={start}, target=end, cutoff=None, weight='length', mode='walk')
     except:
         return False, None
+
     if walk_path['length'] < 3000:
         return True, {'length': walk_path['length'], 'nodes': walk_path['nodes'], 'mode': ['walk']}
     else:
@@ -472,14 +473,19 @@ def get_paths(start, end, case, G):
         paths['walk'] = short_path
         return paths
     else:
-        working_modes = ['bus', 'luas', 'drive']
+        working_modes = ['bus','drive']
         for mode in working_modes:
             other_modes = list(working_modes)
             other_modes.remove(mode)
             path = start_here(start, end, mode, other_modes, case, G)
             if path:
                 paths[mode] = path
-        return paths
+        if not paths:
+            short_path['nodes'] = [short_path['nodes']]
+            paths['walk'] = short_path
+            return paths
+        else:
+            return paths
 
 def calculate_coordinates(G, paths):
     for key, item in paths.items():
@@ -487,7 +493,7 @@ def calculate_coordinates(G, paths):
         for node_list in item['nodes']:
             temp_node_list = []
             for node in node_list:
-                temp_node_list.append((G.nodes.data()[node]['y'], G.nodes.data()[node]['x']))
+                temp_node_list.append([G.nodes.data()[node]['y'], G.nodes.data()[node]['x']])
             coordinates.append(temp_node_list)
         item['coordinates'] = coordinates
     return paths
@@ -500,6 +506,3 @@ def get_coordinates(start, end, case, graph_location):
     paths_with_coordinates = calculate_coordinates(G, paths)
     # print(paths_with_coordinates)
     return paths_with_coordinates
-
-
-# get_coordinates((53.2815126, -6.2341631),(53.3881208173444, -6.2659470210), 0, 'full_graph.json')
