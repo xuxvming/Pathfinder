@@ -102,16 +102,12 @@ public class OSMMapsActivity extends Activity implements LocationListener {
         Context ctx = getApplicationContext();
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
         setContentView(R.layout.activity_osm_maps);
-        spinner = (ProgressBar)findViewById(R.id.progressBar1);
+        spinner = findViewById(R.id.progressBar1);
         spinner.setVisibility(View.GONE);
         FloatingActionButton locationButton = findViewById(R.id.location_button);
         searchButton = findViewById(R.id.search_button);
-        final FloatingActionButton p2pButton = findViewById(R.id.p2p);
         map = findViewById(R.id.map);
         final FloatingActionButton realtime_button = findViewById(R.id.realtime_button);
-        map = (MapView) findViewById(R.id.map);
-        final FloatingActionButton realtime_button = findViewById(R.id.realtime_button);
-        map = (MapView) findViewById(R.id.map);
         map.setTileSource(TileSourceFactory.MAPNIK);
         mapController = map.getController();
         mapController.setZoom(9.5);
