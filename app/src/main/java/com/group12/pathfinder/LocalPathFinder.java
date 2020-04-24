@@ -13,7 +13,7 @@ public class LocalPathFinder extends AbstractPathFinder {
     private String TAG = LocalPathFinder.class.getName();
     private String cachedFile;
 
-    LocalPathFinder(GeoPoint origin, GeoPoint destination, String url, String cachedFile, int travelChoice) {
+    public LocalPathFinder(GeoPoint origin, GeoPoint destination, String url, String cachedFile, int travelChoice) {
         super(origin, destination, "",travelChoice);
         this.cachedFile = cachedFile;
     }
@@ -50,6 +50,7 @@ public class LocalPathFinder extends AbstractPathFinder {
         }
         directionsObject.setStartPoint(getOrigin());
         directionsObject.setEndPoint(getDestination());
+        directionsObject.setTravelChoice(getTravelChoice());
         return directionsObject;
     }
 }

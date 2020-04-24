@@ -13,6 +13,7 @@ public class PathFinderFactory implements Serializable {
     private static final Logger LOGGER = LoggerFactory.getLogger(PathFinderFactory.class);
 
     private final static String GOOGLE_DIRECTIONS_API = "https://maps.googleapis.com/maps/api/directions/json?";
+
     private final static String WEB_SERVICE_API = "http://104.197.46.193/getcoords?";
     private final static String API_KEY = "AIzaSyDSD2X4p1lAIuYGWTcr7NKKPNPTAgsUD-w";
 
@@ -22,13 +23,13 @@ public class PathFinderFactory implements Serializable {
 
 
     private GeoPoint destinationLatLng;
-    private String srouce = "Server";
+    private String source = "Server";
     private String graph_location;
     private int travelChoice = 0;
     private String searchText = "";
 
     public AbstractPathFinder getPathFinder(){
-        if (srouce.equals("Local")){
+        if (source.equals("Local")){
             return new LocalPathFinder(originLatLng,destinationLatLng,"",graph_location,travelChoice);
         }
         else {
@@ -37,12 +38,12 @@ public class PathFinderFactory implements Serializable {
     }
 
 
-    public String getMode() {
-        return srouce;
+    public String getSource() {
+        return source;
     }
 
     public void setSource(String mode) {
-        this.srouce = mode;
+        this.source = mode;
     }
 
     public Context getContext() {
@@ -83,6 +84,10 @@ public class PathFinderFactory implements Serializable {
 
     public GeoPoint getDestinationLatLng() {
         return destinationLatLng;
+    }
+
+    public static String getWebServiceApi() {
+        return WEB_SERVICE_API;
     }
 
 

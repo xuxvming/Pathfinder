@@ -19,6 +19,8 @@ public class AbstractDirectionsObject extends ResponseObject {
     private Map<String,List<String>> modes;
     private Map<String, TravelMode> availableModes;
 
+    private int travelChoice;
+
     public AbstractDirectionsObject(){
         this.availableModes = new HashMap<>();
         this.modes = new HashMap<>();
@@ -77,6 +79,14 @@ public class AbstractDirectionsObject extends ResponseObject {
 
     public void setEndPoint(GeoPoint endPoint) {
         this.endPoint = endPoint;
+    }
+
+    public int getTravelChoice() {
+        return travelChoice;
+    }
+
+    public void setTravelChoice(int travelChoice) {
+        this.travelChoice = travelChoice;
     }
 
     static class TravelMode implements Serializable {
