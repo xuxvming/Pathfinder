@@ -24,14 +24,14 @@ public class PathSettingActivity extends AppCompatActivity {
                                              public void onClick(View view) {
                                                  int radioId = radioGroup.getCheckedRadioButtonId();
                                                  if (radioId == -1) {
-                                                     factory.setTravelChoice(1);
+                                                     factory.setTravelChoice(0);
                                                  }
                                                  else {
                                                      radioButton = findViewById(radioId);
                                                      if (radioButton.getText().equals("Environment")) {
-                                                         factory.setTravelChoice(2);
-                                                     } else if (radioButton.getText().equals("Comfort")) {
                                                          factory.setTravelChoice(1);
+                                                     } else if (radioButton.getText().equals("Comfort")) {
+                                                         factory.setTravelChoice(2);
                                                      } else {
                                                          factory.setTravelChoice(0);
                                                      }
