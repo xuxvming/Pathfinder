@@ -12,40 +12,56 @@ import android.graphics.Paint;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.wifi.p2p.WifiP2pManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.GestureDetector;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.ProgressBar;
+
 import androidx.core.app.ActivityCompat;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.group12.p2p.WifiDirectService;
 import com.group12.pathfinder.AbstractDirectionsObject;
+import com.group12.pathfinder.AbstractPathFinder;
+import com.group12.pathfinder.OnlinePathFinder;
 import com.group12.pathfinder.PathFinderFactory;
 import com.group12.utils.PermissionChecker;
+import com.group12.utils.RequestMaker;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.events.MapEventsReceiver;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
-import org.osmdroid.views.Projection;
 import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polyline;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 
 public class OSMMapsActivity extends Activity implements LocationListener {
     public static final String TAG = "OSMMapsActivity";
-    private FloatingActionButton locationButton;
     private FloatingActionButton searchButton;
+    private ProgressBar spinner;
     MapView map = null;
+    GeoPoint current_position;
+    String current_available_modes;
     public LocationManager locationManager;
     private static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
     private IMapController mapController;
@@ -53,6 +69,9 @@ public class OSMMapsActivity extends Activity implements LocationListener {
     private PathFinderFactory pathFinderFactory = new PathFinderFactory();
     boolean isBound = false;
     private boolean centreMap = true;
+    private AbstractDirectionsObject response;
+    private MapEventsOverlay OverlayGesture;
+
     private ServiceConnection myConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
@@ -83,10 +102,12 @@ public class OSMMapsActivity extends Activity implements LocationListener {
         Context ctx = getApplicationContext();
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
         setContentView(R.layout.activity_osm_maps);
-        locationButton = findViewById(R.id.location_button);
+        spinner = findViewById(R.id.progressBar1);
+        spinner.setVisibility(View.GONE);
+        FloatingActionButton locationButton = findViewById(R.id.location_button);
         searchButton = findViewById(R.id.search_button);
+        map = findViewById(R.id.map);
         final FloatingActionButton realtime_button = findViewById(R.id.realtime_button);
-        map = (MapView) findViewById(R.id.map);
         map.setTileSource(TileSourceFactory.MAPNIK);
         mapController = map.getController();
         mapController.setZoom(9.5);
@@ -113,15 +134,15 @@ public class OSMMapsActivity extends Activity implements LocationListener {
 
         };
         //Creating a handle overlay to capture the gestures
-        MapEventsOverlay OverlayEventos = new MapEventsOverlay(getBaseContext(), mReceive);
-        map.getOverlays().add(OverlayEventos);
+        OverlayGesture = new MapEventsOverlay(getBaseContext(), mReceive);
+        map.getOverlays().add(OverlayGesture);
 
         //Refreshing the map to draw the new overlay
         map.invalidate();
-
-        AbstractDirectionsObject response = (AbstractDirectionsObject) getIntent().getSerializableExtra("Response");
+        getLocation();
+        response = (AbstractDirectionsObject) getIntent().getSerializableExtra("Response");
         if (response != null){
-            Map<String, List<Polyline>> lines = addPolyline(response);
+            Map<String, List<Polyline>> lines = getPolylines(response);
             for (Map.Entry<String,List<Polyline>> entry:lines.entrySet()){
 //                    line.getOutlinePaint().setColor(getColor(entry.getKey()));
                     map.getOverlays().addAll(entry.getValue());
@@ -155,7 +176,7 @@ public class OSMMapsActivity extends Activity implements LocationListener {
         searchButton.setOnClickListener(new OnClickListener() {
                                             @Override
                                             public void onClick(View view) {
-                                                getLocation();
+                                                //getLocation();
                                                 Intent intent = new Intent(OSMMapsActivity.this,SearchActivity.class);
                                                 intent.putExtra(PathFinderFactory.class.getName(),pathFinderFactory);
                                                 startActivity(intent);
@@ -171,12 +192,13 @@ public class OSMMapsActivity extends Activity implements LocationListener {
             }
 
         });
-        getLocation();
+
     }
 
     public void onResume() {
         super.onResume();
         map.onResume();
+        setLocationUpdates();
     }
 
     public void onPause() {
@@ -185,16 +207,6 @@ public class OSMMapsActivity extends Activity implements LocationListener {
         locationManager.removeUpdates(this);
     }
 
-    final GestureDetector gd = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
-        @Override
-        public void onLongPress(MotionEvent e) {
-            Projection project = map.getProjection();
-            GeoPoint loc = (GeoPoint) project.fromPixels((int) e.getX(), (int) e.getY());
-            String longitude = Double.toString(loc.getLongitude());
-            String latitude = Double.toString(loc.getLatitude());
-            Log.d(TAG, "Gesture Longitude: " + longitude + " Latitude: " + latitude);
-        }
-    });
 
     public static WifiDirectService getWifiDirectService() {
         return wifiDirectService;
@@ -206,7 +218,6 @@ public class OSMMapsActivity extends Activity implements LocationListener {
         setLocationUpdates();
     }
 
-
     public void setLocationUpdates(){
         int minTime;
         int minDistance;
@@ -214,7 +225,7 @@ public class OSMMapsActivity extends Activity implements LocationListener {
             minTime = 0;
             minDistance = 0;
         } else{
-            minTime = 30000;
+            minTime = 60000;
             minDistance = 100;
         }
 
@@ -232,12 +243,25 @@ public class OSMMapsActivity extends Activity implements LocationListener {
 
 
     public void onLocationChanged(Location location) {
-        GeoPoint current_position = new GeoPoint(location.getLatitude(), location.getLongitude());
+        current_position = new GeoPoint(location.getLatitude(), location.getLongitude());
         if (centreMap) {
             mapController.setCenter(current_position);
             centreMap = false;
-            setLocationUpdates();
+            Marker startMarker = new Marker(map);
+            startMarker.setTextIcon("start: " + current_position.toDoubleString());
+            startMarker.setPosition(current_position);
+            startMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+            map.getOverlays().add(startMarker);
+            map.invalidate();
         }
+        else if (response != null) {
+            ConnectivityManager manager = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo activeNetwork = manager.getActiveNetworkInfo();
+            if (activeNetwork.isConnected()) {
+                checkForTransportUpdates();
+            }
+        }
+        setLocationUpdates();
         pathFinderFactory.setOriginLatLng(current_position);
         Log.d(TAG, "latitude:" + location.getLatitude() + " longitude:" + location.getLongitude());
     }
@@ -262,7 +286,7 @@ public class OSMMapsActivity extends Activity implements LocationListener {
         getLocation();
     }
 
-    private Map<String,List<Polyline>> addPolyline(AbstractDirectionsObject object){
+    private Map<String,List<Polyline>> getPolylines(AbstractDirectionsObject object){
         Map<String, List<Polyline>> res = new HashMap();
         Set<String> availableRoutes = object.getAvailableRoutes();
         for (String route:availableRoutes){
@@ -297,6 +321,69 @@ public class OSMMapsActivity extends Activity implements LocationListener {
                 return getResources().getColor(R.color.polylinecolor_bus);
             default:
                 return getResources().getColor(R.color.polylinecolor_luas);
+        }
+    }
+
+    private void checkForTransportUpdates() {
+        Log.i(TAG,"Checking for Transport Status Updates");
+        HttpGetRequest getRequest = new HttpGetRequest();
+        getRequest.execute();
+
+    }
+
+    private void removePolyLines(){
+        map.getOverlays().clear();
+        map.getOverlays().add(OverlayGesture);
+    }
+    public class HttpGetRequest extends AsyncTask<AbstractPathFinder, Void, String> {
+        private final Logger LOGGER = LoggerFactory.getLogger(OSMMapsActivity.class);
+        private String requestMethod = "GET";
+        @Override
+        protected String doInBackground(final AbstractPathFinder... params){
+
+            try{
+                URL url = new URL("http://35.202.105.121/status");
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod(requestMethod);
+                InputStream inputStream = connection.getInputStream();
+                StringBuilder sb = new StringBuilder();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                String line;
+                while ((line = reader.readLine()) !=null){
+                    sb.append(line);
+                }
+                return sb.toString();
+            } catch (IOException e) {
+                LOGGER.error("Error making request" ,e );
+            }
+            return null;
+
+        }
+        @Override
+        protected void onPostExecute(String result){
+            Log.i(TAG,"PostExecute Activated");
+            if (result == null && result.isEmpty()){
+                return;
+            }
+            if (current_available_modes == null){
+                current_available_modes = result;
+                return;
+            }
+            if (!result.equals(current_available_modes)){
+                spinner.setVisibility(View.VISIBLE);
+                current_available_modes = result;
+                removePolyLines();
+                Log.i(TAG,"Change detected");
+                AbstractPathFinder pathFinder = new OnlinePathFinder(current_position, response.getEndPoint(), PathFinderFactory.getWebServiceApi(), response.getTravelChoice());
+                response = pathFinder.makeRequest(new RequestMaker());
+
+                Map<String, List<Polyline>> lines = getPolylines(response);
+                for (Map.Entry<String,List<Polyline>> entry:lines.entrySet()){
+                    map.getOverlays().addAll(entry.getValue());
+                }
+                map.invalidate();
+                spinner.setVisibility(View.GONE);
+            }
         }
     }
 }
