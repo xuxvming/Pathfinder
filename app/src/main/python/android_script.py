@@ -473,7 +473,7 @@ def get_paths(start, end, case, G):
         paths['walk'] = short_path
         return paths
     else:
-        working_modes = ['bus','drive']
+        working_modes = ['bus','luas','drive']
         for mode in working_modes:
             other_modes = list(working_modes)
             other_modes.remove(mode)
@@ -506,3 +506,7 @@ def get_coordinates(start, end, case, graph_location):
     paths_with_coordinates = calculate_coordinates(G, paths)
     # print(paths_with_coordinates)
     return paths_with_coordinates
+
+
+# get_coordinates((53.2815126, -6.2341631),(53.3881208173444, -6.2659470210), 1, 'full_graph.json')
+# get_coordinates((53.351967, -6.2640063),(53.27877325004991, -6.198953130181394), 1, 'full_graph.json')
